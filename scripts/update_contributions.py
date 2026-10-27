@@ -26,13 +26,44 @@ def fetch_calendar():
     return data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
 
 
+def gql(query):
+    req = urllib.request.Request(
+        "https://api.github.com/graphql", data=json.dumps({"query": query}).encode(), method="POST",
+        headers={"Authorization": "Bearer " + os.environ["GITHUB_TOKEN"], "Content-Type": "application/json"})
+    with urllib.request.urlopen(req) as r:
+        return json.load(r)["data"]["user"]
+
+
+def fetch_all_time():
+    """Total de contribuições desde sempre e data da primeira contribuição."""
+    years = sorted(gql('query{ user(login:"%s"){ contributionsCollection{ contributionYears } } }' % USER)
+                   ["contributionsCollection"]["contributionYears"])
+    parts = " ".join(
+        f'y{y}: contributionsCollection(from:"{y}-01-01T00:00:00Z", to:"{y}-12-31T23:59:59Z")'
+        "{ contributionCalendar{ totalContributions weeks{ contributionDays{ date contributionCount } } } }"
+        for y in years)
+    data = gql('query{ user(login:"%s"){ %s } }' % (USER, parts))
+    total, first = 0, None
+    for y in years:
+        cal = data[f"y{y}"]["contributionCalendar"]
+        total += cal["totalContributions"]
+        if first is None:
+            first = next((d["date"] for w in cal["weeks"] for d in w["contributionDays"] if d["contributionCount"] > 0), None)
+    return total, first
+
+
+def fmt_date(lang, iso):
+    y, m, d = int(iso[:4]), int(iso[5:7]), int(iso[8:10])
+    return f"{d} {MONTHS['pt'][m - 1]}. {y}" if lang == "pt" else f"{MONTHS['en'][m - 1].capitalize()} {d}, {y}"
+
+
 def caption(lang, today):
     if lang == "pt":
         return f"atualizado em {today.day} de {MONTHS['pt'][today.month - 1]}. de {today.year}"
     return f"updated {MONTHS['en'][today.month - 1].capitalize()} {today.day}, {today.year}"
 
 
-def grid(cal, lang, today):
+def grid(cal, lang, today, all_total, first):
     weeks = cal["weeks"]
     labels, last = [], None
     for w in weeks:
@@ -53,6 +84,12 @@ def grid(cal, lang, today):
     less, more = ("menos", "mais") if lang == "pt" else ("less", "more")
     legend = "".join(f'<span style="width: 12px; height: 12px; border-radius: 3px; background: {c}"></span>' for c in LEVELS.values())
     summary = f"Gráfico de contribuições no GitHub: {title}." if lang == "pt" else f"GitHub contributions chart: {title}."
+    chip = "font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; background: #FFFFFF; border: 2px solid #16120F; border-radius: 999px; padding: 5px 14px"
+    at = f"{all_total:,}".replace(",", ".") if lang == "pt" else f"{all_total:,}"
+    first_lbl = (f"primeira contribuição · {fmt_date('pt', first)}" if lang == "pt" else f"first contribution · {fmt_date('en', first)}")
+    total_lbl = f"{at} contribuições no total" if lang == "pt" else f"{at} contributions all-time"
+    stats = (f'<div style="display: flex; flex-wrap: wrap; gap: 10px">\n<span style="{chip}">{first_lbl}</span>\n'
+             f'<span style="{chip}; background: {ACCENT_SOFT}">{total_lbl}</span>\n</div>\n')
     dot = 'width: 11px; height: 11px; border-radius: 999px; border: 2px solid #16120F; background: '
     return f'''<div class="card" style="background: #FFFFFF; border: 2.5px solid #16120F; border-radius: 22px; box-shadow: 8px 8px 0 #16120F; overflow: hidden">
 <div aria-hidden="true" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 2.5px solid #16120F">
@@ -64,7 +101,7 @@ def grid(cal, lang, today):
 <h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.05">{title}</h3>
 <a href="https://github.com/{USER}" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600">github.com/{USER} →</a>
 </div>
-<div role="img" aria-label="{summary}" style="overflow-x: auto; padding-bottom: 4px">
+{stats}<div role="img" aria-label="{summary}" style="overflow-x: auto; padding-bottom: 4px">
 <div style="display: grid; grid-template-columns: repeat({len(weeks)}, 13px); gap: 3px; width: max-content">{lab}</div>
 <div style="display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 13px); grid-auto-columns: 13px; gap: 3px; width: max-content; margin-top: 6px">{"".join(cells)}</div>
 </div>
@@ -79,14 +116,15 @@ def grid(cal, lang, today):
 
 def main():
     cal, today = fetch_calendar(), date.today()
+    all_total, first = fetch_all_time()
     pattern = re.compile(r"<!-- contributions:start -->\n.*?<!-- contributions:end -->", re.S)
     for lang, path in PAGES.items():
         html = open(path, encoding="utf-8").read()
-        new = pattern.sub(lambda _: "<!-- contributions:start -->\n" + grid(cal, lang, today) + "<!-- contributions:end -->", html, count=1)
+        new = pattern.sub(lambda _: "<!-- contributions:start -->\n" + grid(cal, lang, today, all_total, first) + "<!-- contributions:end -->", html, count=1)
         if new == html and not pattern.search(html):
             raise SystemExit(f"marcadores não encontrados em {path}")
         open(path, "w", encoding="utf-8").write(new)
-    print("total:", cal["totalContributions"])
+    print("último ano:", cal["totalContributions"], "| total:", all_total, "| primeira:", first)
 
 
 if __name__ == "__main__":
