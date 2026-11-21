@@ -1092,7 +1092,7 @@ const today=()=>key(new Date());
 const diff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
 const DOW=["dom","seg","ter","qua","qui","sex","sáb"];
 const fmt=k=>{const d=parse(k);return `${DOW[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}`};
-const START="2026-11-22";
+const START="2026-11-21";
 const OFFS=[["2026-11-23","2026-11-28","semana de folga"],["2026-12-09","2026-12-10","folga"],["2026-12-25","2026-12-25","Natal"],["2026-12-30","2027-01-02","folga de Ano-Novo"]];
 const isOff=k=>OFFS.some(([a,b])=>k>=a&&k<=b);
 const backOn=k=>{while(isOff(k))k=addD(k,1);return k};
@@ -1107,7 +1107,8 @@ const TL=[];{let d=START,n=0;const chOf={};PLAN.forEach(p=>chOf[p.d]=p.ci);
     if(n<=40)pod={t:`Coffee Break French 1:${pad(n)}`,s:"temporada 1, lição "+n+" (A1)",u:CBF};
     else if(ci!=null)pod={t:"Journal en français facile",s:"o jornal do dia, 10 min, com transcrição",u:RFI};
     else pod={t:`Coffee Break French 2:${pad(n-52)}`,s:`temporada 2, lição ${n-52} (A2) + Journal en français facile`,u:CBF};
-    TL.push({d,n,ci:ci??null,pod});d=addD(d,1)}}
+    const pods=[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF});
+    TL.push({d,n,ci:ci??null,pods});d=addD(d,1)}}
 
 /* ---------- cartões e estado (Anki / SM-2) ---------- */
 const KIND={t:"traduza.fr",p:"diga-em-francês.pt",c:"complete.fr",r:"regra.md"};
@@ -1189,7 +1190,7 @@ function renderPlan(){
     const st=x.d===t?"now":done?"ok":x.d<t&&ch?"late":x.d<t?"past":"";
     h+=`<li class="${st}" ${x.d===t?'id="tlNow"':""}><div class="d mono">${fmt(x.d)}<span>dia ${x.n}</span></div><div class="c">
       ${ch?`<b>cap. ${x.ci+1} · ${esc(ch.t)}</b><small>${esc(ch.s)}${BILAN[x.ci]?` · <strong>+ ${BILAN[x.ci]}</strong>`:""}</small>`:`<b>revisão</b><small>Faça as revisões do dia e 1 rodada de un/une.</small>`}
-      <a class="pod" href="${x.pod.u}" target="_blank" rel="noopener"><span class="mono">ouvir</span><b>${x.pod.t}</b><small>${x.pod.s}</small></a>
+      ${x.pods.map(p=>`<a class="pod" href="${p.u}" target="_blank" rel="noopener"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small></a>`).join("")}
       <div class="tacts">${ch?`<button class="btn sm" data-go="flip" data-c="${x.ci}">fichas</button><button class="btn sm" data-go="write" data-c="${x.ci}">escrever</button>`:`<button class="btn sm" data-go="due">revisões</button>`}<button class="btn sm" data-go="gen">un/une</button>${st==="ok"?'<span class="okk mono">feito</span>':st==="now"?'<span class="okk mono now">hoje</span>':st==="late"?'<span class="okk mono late">atrasado</span>':""}</div>
     </div></li>`});
   $("tl").innerHTML=h;
