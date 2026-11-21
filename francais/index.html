@@ -191,6 +191,10 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
 .cverb b{font:800 clamp(34px,9vw,52px)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;display:block}
 .cverb small{font:500 15px 'JetBrains Mono',monospace;color:var(--mut)}
 .cpers{font:800 clamp(26px,7vw,36px)/1 'Bricolage Grotesque',sans-serif;background:var(--white);border:2.5px solid var(--line);border-radius:16px;padding:10px 16px;justify-self:start;transform:rotate(-1deg)}
+.shd{background:var(--white)}.shd summary{cursor:pointer;min-height:32px}.shd ol{margin:8px 0 0;padding-left:20px;font-size:14px;display:grid;gap:4px}
+.shtag{font-size:11px;font-weight:600;align-self:center;color:var(--mut)}
+.tl li.goal .c{background:var(--coral);color:var(--onc);box-shadow:7px 7px 0 var(--sh)}.tl li.goal .c>small{color:var(--onc)}
+.tl li.goal::before{background:var(--coral);width:18px;height:18px;left:-11px}
 </style>
 <script>try{const t=localStorage.getItem("fiches-fr-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -907,6 +911,62 @@ const CH = [
 ["t","Même si tu pars, je reste.","Mesmo que você vá, eu fico.","même si + indicativo"]]}
 ];
 
+// vocabulário por capítulo: [tema, [[pt, fr, dica?], ...]]
+const VOC=[
+["países e nacionalidades",[["o Brasil / brasileira","le Brésil / brésilienne"],["a França / francesa","la France / française"],["a Alemanha / alemão","l'Allemagne / allemand"],["a Espanha / espanhola","l'Espagne / espagnole"],["a Inglaterra / inglês","l'Angleterre / anglais"],["os Estados Unidos / americano","les États-Unis / américain"],["a Itália / italiana","l'Italie / italienne"],["o Japão / japonês","le Japon / japonais"],["a China / chinesa","la Chine / chinoise"],["o Canadá / canadense","le Canada / canadien"],["a Bélgica / belga","la Belgique / belge"],["a Suíça / suíça","la Suisse / suisse"]]],
+["descrever pessoas",[["alto / baixo","grand / petit"],["magro / gordo","mince / gros"],["jovem / velho","jeune / vieux"],["bonito / feio","beau / laid"],["loiro / moreno (cabelo)","blond / brun"],["simpático","sympathique","informal: sympa"],["engraçado","drôle"],["tímido","timide"],["inteligente","intelligent"],["gentil","gentil / gentille"],["chato (pessoa)","ennuyeux","informal: relou"],["trabalhador / preguiçoso","travailleur / paresseux"]]],
+["conversa básica",[["olá / tchau","bonjour / au revoir"],["boa noite (chegando)","bonsoir"],["oi / tchau (informal)","salut"],["por favor","s'il vous plaît","informal: s'il te plaît"],["obrigada / de nada","merci / de rien"],["desculpa","pardon / excusez-moi"],["sim / não","oui / non"],["talvez","peut-être"],["claro!","bien sûr !"],["não sei","je ne sais pas"],["não entendo","je ne comprends pas"],["pode repetir?","vous pouvez répéter ?"]]],
+["objetos do dia a dia",[["a chave","la clé"],["o celular","le portable"],["o computador","l'ordinateur","masculino: un ordinateur"],["a caneta","le stylo"],["o caderno","le cahier"],["a mochila","le sac à dos"],["a carteira","le portefeuille"],["os óculos","les lunettes","feminino plural"],["o relógio","la montre"],["o guarda-chuva","le parapluie"],["a garrafa","la bouteille"],["o livro","le livre"]]],
+["profissões",[["engenheira","ingénieure"],["desenvolvedora","développeuse"],["médico","médecin"],["professor (escola)","professeur / prof"],["advogada","avocate"],["estudante","étudiant / étudiante"],["enfermeiro","infirmier"],["cozinheiro","cuisinier"],["vendedor","vendeur"],["jornalista","journaliste"],["chefe","chef / patron"],["desempregado","au chômage"]]],
+["coisas pessoais",[["a bolsa","le sac"],["a roupa","les vêtements"],["o documento de identidade","la carte d'identité"],["o passaporte","le passeport"],["o fone de ouvido","les écouteurs"],["o carregador","le chargeur"],["a escova de dentes","la brosse à dents"],["o perfume","le parfum"],["a foto","la photo"],["o presente","le cadeau"],["o dinheiro","l'argent","masculino"],["o cartão de crédito","la carte bancaire"]]],
+["família e relações",[["o marido / a esposa","le mari / la femme"],["o namorado / a namorada","le copain / la copine"],["o irmão / a irmã","le frère / la sœur"],["o tio / a tia","l'oncle / la tante"],["o primo / a prima","le cousin / la cousine"],["o neto / a neta","le petit-fils / la petite-fille"],["o filho único","le fils unique"],["casado / solteiro","marié / célibataire"],["divorciado","divorcé"],["o vizinho","le voisin"],["o bebê","le bébé"],["os parentes","les proches"]]],
+["roupas e compras",[["a camisa","la chemise"],["a camiseta","le t-shirt"],["a calça","le pantalon","singular em francês"],["o vestido","la robe"],["a saia","la jupe"],["o casaco","le manteau"],["os sapatos","les chaussures"],["o tênis","les baskets"],["o tamanho","la taille"],["experimentar","essayer"],["o provador","la cabine d'essayage"],["quanto custa?","combien ça coûte ?"]]],
+["a cidade",[["a rua","la rue"],["a praça","la place"],["o bairro","le quartier"],["a padaria","la boulangerie"],["o supermercado","le supermarché"],["a farmácia","la pharmacie"],["a prefeitura","la mairie"],["o correio","la poste"],["o banco","la banque"],["a esquina","le coin de la rue"],["o semáforo","le feu"],["a faixa de pedestres","le passage piéton"]]],
+["a casa",[["o quarto","la chambre"],["a sala","le salon"],["a cozinha","la cuisine"],["o banheiro","la salle de bains","o vaso: les toilettes"],["a cama","le lit"],["o sofá","le canapé"],["o armário","le placard"],["a geladeira","le frigo"],["a mesa","la table"],["a janela","la fenêtre"],["a escada","l'escalier","masculino"],["o andar (1º, 2º…)","l'étage","masculino"]]],
+["corpo e sensações",[["a cabeça","la tête"],["a mão","la main"],["o pé","le pied"],["o braço / a perna","le bras / la jambe"],["as costas","le dos"],["a barriga","le ventre"],["a garganta","la gorge"],["os olhos","les yeux","singular: l'œil"],["o cabelo","les cheveux"],["estar cansado","être fatigué"],["estar com fome","avoir faim"],["estar doente","être malade"]]],
+["cores e aparência",[["vermelho","rouge"],["azul","bleu"],["verde","vert"],["amarelo","jaune"],["preto / branco","noir / blanc"],["cinza","gris"],["rosa","rose"],["laranja (cor)","orange","não varia"],["marrom","marron","não varia"],["claro / escuro","clair / foncé"],["listrado","rayé"],["de bolinhas","à pois"]]],
+["dinheiro e preços",[["o preço","le prix"],["caro / barato","cher / pas cher"],["o desconto","la réduction"],["a liquidação","les soldes"],["o troco","la monnaie"],["pagar em dinheiro","payer en espèces"],["pagar com cartão","payer par carte"],["a nota fiscal","le ticket de caisse"],["o caixa (lugar)","la caisse"],["um euro e cinquenta","un euro cinquante"],["grátis","gratuit"],["a conta (restaurante)","l'addition"]]],
+["calendário e clima",[["segunda / terça","lundi / mardi"],["quarta / quinta","mercredi / jeudi"],["sexta / sábado / domingo","vendredi / samedi / dimanche"],["janeiro / fevereiro","janvier / février"],["março / abril / maio","mars / avril / mai"],["junho / julho / agosto","juin / juillet / août"],["setembro / outubro","septembre / octobre"],["novembro / dezembro","novembre / décembre"],["o fim de semana","le week-end"],["está nublado","il y a des nuages"],["está ventando","il y a du vent"],["a previsão do tempo","la météo"]]],
+["tempo livre",[["o passatempo","le loisir"],["ler","lire"],["cozinhar","cuisiner"],["passear","se promener"],["viajar","voyager"],["dançar","danser"],["cantar","chanter"],["desenhar","dessiner"],["jogar videogame","jouer aux jeux vidéo"],["ver séries","regarder des séries"],["sair com amigos","sortir avec des amis"],["descansar","se reposer"]]],
+["verbos do dia a dia",[["acordar","se réveiller"],["trabalhar","travailler"],["estudar","étudier"],["escutar","écouter"],["procurar","chercher"],["encontrar (achar)","trouver"],["esperar","attendre"],["ajudar","aider"],["mudar (de casa)","déménager"],["usar","utiliser"],["gostar / adorar","aimer / adorer"],["detestar","détester"]]],
+["trabalho",[["o escritório","le bureau"],["a empresa","l'entreprise","feminino"],["a reunião","la réunion"],["o colega","le collègue"],["o salário","le salaire"],["o cliente","le client"],["o projeto","le projet"],["o prazo","le délai / la date limite"],["as férias","les vacances"],["o home office","le télétravail"],["contratar","embaucher"],["pedir demissão","démissionner"]]],
+["frequência e modo",[["sempre","toujours"],["às vezes","parfois"],["frequentemente","souvent"],["raramente","rarement"],["nunca","ne… jamais"],["todo dia","tous les jours"],["uma vez por semana","une fois par semaine"],["devagar","lentement"],["rápido (advérbio)","vite"],["bem / mal","bien / mal"],["juntos","ensemble"],["de repente","tout à coup"]]],
+["comida e bebida",[["o café da manhã","le petit-déjeuner"],["o almoço / o jantar","le déjeuner / le dîner"],["o pão","le pain"],["o queijo","le fromage"],["a carne","la viande"],["o frango","le poulet"],["o peixe","le poisson"],["os legumes","les légumes"],["o arroz","le riz"],["os ovos","les œufs"],["o suco","le jus"],["a água com gás","l'eau gazeuse"]]],
+["mercado e quantidades",[["um quilo de","un kilo de"],["meio quilo","une livre / 500 grammes"],["um pacote de","un paquet de"],["uma lata de","une boîte de"],["uma fatia de","une tranche de"],["um pedaço de","un morceau de"],["uma dúzia de","une douzaine de"],["um litro de","un litre de"],["a feira","le marché"],["o carrinho","le chariot"],["a sacola","le sac"],["fresco","frais / fraîche"]]],
+["viagem e geografia",[["o mar","la mer"],["a praia","la plage"],["a montanha","la montagne"],["o campo (interior)","la campagne"],["o rio","la rivière / le fleuve","fleuve: deságua no mar"],["a ilha","l'île","feminino"],["o lago","le lac"],["a floresta","la forêt"],["o sul / o norte","le sud / le nord"],["o leste / o oeste","l'est / l'ouest"],["a paisagem","le paysage"],["a região","la région"]]],
+["comparar",[["mais… que","plus… que"],["menos… que","moins… que"],["tão… quanto","aussi… que"],["melhor (adjetivo)","meilleur"],["pior","pire"],["maior (o)","le plus grand"],["rápido / lento","rapide / lent"],["fácil / difícil","facile / difficile"],["moderno / antigo","moderne / ancien"],["barulhento / tranquilo","bruyant / calme"],["perto / longe","près / loin"],["parecido com","pareil que / semblable à"]]],
+["transportes",[["o metrô","le métro"],["o ônibus","le bus"],["o trem","le train"],["o avião","l'avion","masculino"],["a bicicleta","le vélo"],["o carro","la voiture"],["a estação","la gare / la station","gare: trem; station: metrô"],["o ponto de ônibus","l'arrêt de bus"],["o bilhete","le billet / le ticket"],["a passagem de ida e volta","l'aller-retour"],["pegar (o metrô)","prendre le métro"],["descer (do ônibus)","descendre du bus"]]],
+["lazer na cidade",[["o cinema","le cinéma"],["o museu","le musée"],["o teatro","le théâtre"],["a piscina","la piscine"],["a academia","la salle de sport"],["o parque","le parc"],["o show","le concert"],["a exposição","l'exposition","feminino"],["o bar","le bar"],["a balada","la boîte (de nuit)"],["o ingresso","le billet / l'entrée"],["a fila","la queue / la file d'attente"]]],
+["expressões de tempo",[["de manhã / à tarde","le matin / l'après-midi"],["à noite","le soir"],["cedo / tarde","tôt / tard"],["estar atrasado","être en retard"],["estar adiantado","être en avance"],["na hora","à l'heure"],["agora / logo","maintenant / bientôt"],["já","déjà"],["ainda","encore / toujours"],["daqui a pouco","tout à l'heure"],["enquanto","pendant que"],["a semana que vem","la semaine prochaine"]]],
+["atividades",[["sair","sortir"],["voltar (para casa)","rentrer"],["dormir","dormir"],["escolher","choisir"],["terminar","finir"],["beber","boire"],["escrever","écrire"],["ler","lire"],["abrir","ouvrir"],["receber","recevoir"],["vender","vendre"],["responder","répondre"]]],
+["rotina e higiene",[["levantar-se","se lever"],["tomar banho","se doucher / prendre une douche"],["escovar os dentes","se brosser les dents"],["vestir-se","s'habiller"],["pentear-se","se coiffer"],["maquiar-se","se maquiller"],["apressar-se","se dépêcher"],["deitar-se","se coucher"],["dormir (pegar no sono)","s'endormir"],["o sabonete","le savon"],["a toalha","la serviette"],["o despertador","le réveil"]]],
+["comunicação",[["ligar para alguém","téléphoner à quelqu'un / appeler"],["mandar uma mensagem","envoyer un message / un texto"],["o e-mail","le mail / le courriel"],["responder a alguém","répondre à quelqu'un"],["mostrar","montrer"],["emprestar","prêter"],["pedir emprestado","emprunter"],["dar","donner"],["devolver","rendre"],["explicar","expliquer"],["agradecer","remercier"],["a ligação","l'appel","masculino"]]],
+["relações sociais",[["o amigo / a amiga","l'ami / l'amie"],["o colega de quarto","le colocataire / le coloc"],["o conhecido","la connaissance","feminino"],["encontrar (alguém)","retrouver / rencontrer","rencontrer: pela 1ª vez"],["convidar","inviter"],["a festa","la fête / la soirée"],["fazer amizade","se faire des amis"],["sair juntos","sortir ensemble"],["confiar em","faire confiance à"],["brigar","se disputer"],["fazer as pazes","se réconcilier"],["sentir falta de","manquer à","tu me manques"]]],
+["cozinha e receitas",[["cortar","couper"],["misturar","mélanger"],["ferver","faire bouillir"],["assar","faire cuire au four"],["fritar","faire frire"],["adicionar","ajouter"],["a panela","la casserole"],["a frigideira","la poêle"],["o forno","le four"],["a colher / o garfo","la cuillère / la fourchette"],["a faca","le couteau"],["o prato","l'assiette","feminino"]]],
+["restaurante",[["uma mesa para dois","une table pour deux"],["o cardápio","la carte"],["o prato do dia","le plat du jour"],["a entrada","l'entrée","feminino"],["o prato principal","le plat principal"],["a sobremesa","le dessert"],["ao ponto / bem passado","à point / bien cuit"],["a gorjeta","le pourboire"],["eu gostaria de…","je voudrais…"],["a conta, por favor","l'addition, s'il vous plaît"],["vegetariano","végétarien"],["sem glúten","sans gluten"]]],
+["moradia",[["o aluguel","le loyer"],["alugar","louer"],["o proprietário","le propriétaire"],["o inquilino","le locataire"],["o apartamento mobiliado","l'appartement meublé"],["o estúdio (quitinete)","le studio"],["a república / dividir apê","la colocation"],["as despesas (condomínio etc.)","les charges"],["o depósito caução","la caution"],["o contrato de aluguel","le bail"],["a residência estudantil","la résidence universitaire"],["o fiador","le garant"]]],
+["estudos e universidade",[["a universidade","l'université"],["a escola de engenharia","l'école d'ingénieurs"],["a disciplina (matéria)","la matière / le cours"],["a aula expositiva","le cours magistral"],["o trabalho em grupo","le travail en groupe"],["a prova","l'examen","masculino"],["a nota","la note"],["o diploma","le diplôme"],["o estágio","le stage"],["a bolsa (de estudos)","la bourse"],["a matrícula","l'inscription","feminino"],["o restaurante universitário","le resto U / le restaurant universitaire"]]],
+["saúde",[["o médico","le médecin"],["a consulta","le rendez-vous / la consultation"],["a receita médica","l'ordonnance","feminino"],["o remédio","le médicament"],["a dor","la douleur"],["a febre","la fièvre"],["o resfriado","le rhume"],["a gripe","la grippe"],["tosse","la toux"],["o seguro saúde","l'assurance maladie"],["o pronto-socorro","les urgences"],["estar com dor de…","avoir mal à…"]]],
+["verbos de comunicação",[["dizer","dire"],["perguntar","demander"],["contar (uma história)","raconter"],["explicar","expliquer"],["afirmar","affirmer"],["responder","répondre"],["anunciar","annoncer"],["prometer","promettre"],["sugerir","proposer / suggérer"],["reclamar","se plaindre"],["avisar","prévenir"],["repetir","répéter"]]],
+["esportes",[["correr","courir"],["nadar","nager"],["andar de bicicleta","faire du vélo"],["jogar futebol","jouer au foot"],["fazer musculação","faire de la musculation"],["fazer ioga","faire du yoga"],["a corrida","la course"],["o jogo / a partida","le match"],["o time","l'équipe","feminino"],["ganhar / perder","gagner / perdre"],["treinar","s'entraîner"],["o tênis (esporte)","le tennis"]]],
+["carreira",[["a vaga","le poste"],["o currículo","le CV"],["a carta de motivação","la lettre de motivation"],["a entrevista","l'entretien","masculino"],["candidatar-se","postuler / poser sa candidature"],["a experiência","l'expérience"],["as competências","les compétences"],["o contrato","le contrat"],["CLT (efetivo)","le CDI"],["contrato temporário","le CDD"],["autônomo / freelancer","indépendant / freelance"],["a promoção","la promotion"]]],
+["aeroporto e estação",[["o voo","le vol"],["o embarque","l'embarquement","masculino"],["o portão","la porte"],["a bagagem","les bagages"],["a mala","la valise"],["o check-in","l'enregistrement"],["a alfândega","la douane"],["o atraso","le retard"],["cancelado","annulé"],["a plataforma (trem)","le quai / la voie"],["a conexão","la correspondance"],["o horário (de trens)","les horaires"]]],
+["planos",[["o fim de semana que vem","le week-end prochain"],["amanhã à noite","demain soir"],["ter vontade de","avoir envie de"],["ter a intenção de","avoir l'intention de"],["organizar","organiser"],["reservar","réserver"],["o encontro (marcado)","le rendez-vous"],["cancelar","annuler"],["adiar","reporter"],["combinado!","d'accord ! / ça marche !"],["estou livre","je suis libre"],["estou ocupada","je suis occupée"]]],
+["acontecimentos",[["ontem","hier"],["na semana passada","la semaine dernière"],["há dois dias","il y a deux jours"],["primeiro","d'abord"],["depois","ensuite / puis"],["finalmente","enfin"],["acontecer","se passer / arriver"],["esquecer","oublier"],["perder (objeto)","perdre"],["encontrar (de novo)","retrouver"],["visitar (lugar)","visiter"],["visitar (pessoa)","rendre visite à"]]],
+["datas e prazos",[["a véspera","la veille"],["o dia seguinte","le lendemain"],["anteontem","avant-hier"],["depois de amanhã","après-demain"],["no início de","au début de"],["no fim de","à la fin de"],["no meio de","au milieu de"],["o prazo final","la date limite"],["a quinzena","quinze jours"],["o semestre","le semestre"],["a data","la date"],["o feriado","le jour férié"]]],
+["notícias",[["o jornal","le journal"],["a manchete","le titre"],["o artigo","l'article","masculino"],["a notícia","la nouvelle / l'info"],["o governo","le gouvernement"],["a eleição","l'élection","feminino"],["a greve","la grève","muito comum na França!"],["a manifestação","la manifestation / la manif"],["a economia","l'économie","feminino"],["o acidente","l'accident"],["a pesquisa (opinião)","le sondage"],["a imprensa","la presse"]]],
+["infância e lembranças",[["a infância","l'enfance","feminino"],["quando eu era pequena","quand j'étais petite"],["a lembrança","le souvenir"],["lembrar-se de","se souvenir de"],["o brinquedo","le jouet"],["brincar","jouer"],["a escola primária","l'école primaire"],["o professor (primário)","le maître / la maîtresse"],["crescer","grandir"],["antigamente","autrefois / avant"],["na época","à l'époque"],["as férias de verão","les grandes vacances"]]],
+["sentimentos",[["feliz","heureux / heureuse"],["triste","triste"],["com raiva","en colère"],["preocupado","inquiet / inquiète"],["com medo","avoir peur"],["surpreso","surpris"],["decepcionado","déçu"],["orgulhoso","fier / fière"],["estressado","stressé"],["aliviado","soulagé"],["com saudade","avoir le mal du pays","saudade de casa"],["envergonhado","gêné"]]],
+["opinião",[["eu acho que","je pense que / je trouve que"],["na minha opinião","à mon avis"],["concordo","je suis d'accord"],["discordo","je ne suis pas d'accord"],["tem razão","tu as raison"],["está errado","tu as tort"],["por um lado… por outro","d'un côté… de l'autre"],["depende","ça dépend"],["com certeza","sans doute / certainement"],["é verdade","c'est vrai"],["não tenho certeza","je ne suis pas sûre"],["o ponto de vista","le point de vue"]]],
+["tecnologia",[["o computador portátil","l'ordinateur portable"],["o aplicativo","l'application / l'appli"],["a senha","le mot de passe"],["baixar","télécharger"],["salvar (arquivo)","enregistrer / sauvegarder"],["o arquivo","le fichier"],["a tela","l'écran","masculino"],["o teclado","le clavier"],["o mouse","la souris"],["a rede / o wi-fi","le réseau / le wifi"],["o desenvolvedor","le développeur"],["a nuvem","le cloud / le nuage"]]],
+["meio ambiente",[["o meio ambiente","l'environnement"],["o planeta","la planète"],["a poluição","la pollution"],["o aquecimento global","le réchauffement climatique"],["reciclar","recycler"],["o lixo","les déchets / la poubelle","poubelle: lixeira"],["economizar (energia)","économiser"],["a energia renovável","l'énergie renouvelable"],["proteger","protéger"],["o desperdício","le gaspillage"],["sustentável","durable"],["no futuro","à l'avenir"]]],
+["projetos e objetivos",[["o objetivo","l'objectif / le but"],["alcançar","atteindre"],["conseguir (fazer)","réussir à"],["tentar","essayer de"],["decidir","décider de"],["o sucesso","la réussite / le succès"],["o fracasso","l'échec","masculino"],["progredir","progresser"],["melhorar","améliorer"],["até o fim de","d'ici la fin de"],["assim que","dès que"],["daqui a um ano","dans un an"]]],
+["sonhos e desejos",[["eu gostaria de","j'aimerais"],["sonhar com","rêver de"],["o sonho","le rêve"],["esperar (ter esperança)","espérer"],["desejar","souhaiter"],["se eu pudesse","si je pouvais"],["seria ótimo","ce serait génial"],["dar a volta ao mundo","faire le tour du monde"],["ganhar na loteria","gagner au loto"],["morar no exterior","vivre à l'étranger"],["a vontade","l'envie","feminino"],["um dia","un jour"]]],
+["banco e dinheiro",[["a conta bancária","le compte bancaire"],["abrir uma conta","ouvrir un compte"],["o cartão","la carte bancaire"],["sacar dinheiro","retirer de l'argent"],["o caixa eletrônico","le distributeur"],["a transferência","le virement"],["o IBAN (dados da conta)","le RIB","RIB: o comprovante com os dados"],["economizar","faire des économies"],["gastar","dépenser"],["o orçamento","le budget"],["a taxa","les frais"],["emprestar (banco)","prêter"]]],
+["burocracia",[["o visto","le visa"],["a autorização de residência","le titre de séjour"],["a prefeitura (polícia, imigração)","la préfecture"],["o formulário","le formulaire"],["preencher","remplir"],["assinar","signer"],["o comprovante de residência","le justificatif de domicile"],["o documento","le document / la pièce"],["a cópia","la copie / la photocopie"],["o carimbo","le tampon"],["agendar (horário)","prendre rendez-vous"],["é preciso que você envie","il faut que vous envoyiez"]]],
+["conectores",[["porque","parce que"],["então / portanto","donc"],["mas","mais"],["no entanto","pourtant / cependant"],["além disso","de plus / en plus"],["por exemplo","par exemple"],["ou seja","c'est-à-dire"],["por causa de","à cause de"],["graças a","grâce à"],["enquanto que","alors que"],["mesmo que","même si"],["enfim / em suma","bref / en résumé"]]]
+];
+
 // [palavra, gênero m/f, tradução, dica]
 const GEN = [
 ["voiture","f","carro","em português é masculino!"],
@@ -1197,7 +1257,8 @@ const isOff=k=>OFFS.some(([a,b])=>k>=a&&k<=b);
 const backOn=k=>{while(isOff(k))k=addD(k,1);return k};
 const PLAN=[];{let d=START;CH.forEach((_,ci)=>{while(isOff(d))d=addD(d,1);PLAN.push({d,ci});d=addD(d,1)})}
 
-const END="2027-02-19";
+const PH3_END="2027-02-19",END="2027-04-10";
+const FEI="https://www.france-education-international.fr/test/exemples-epreuves-tcf",LTK="https://podcasts.apple.com/podcast/id1580594077";
 const CBF="https://shows.acast.com/coffeebreakfrench/episodes",RFI="https://francaisfacile.rfi.fr/fr/";
 const BILAN={14:"bilan 1 do livro",30:"bilan 2 do livro",44:"bilan 3 do livro",51:"bilan final + test d'évaluation do livro"};
 const TL=[];{let d=START,n=0;const chOf={};PLAN.forEach(p=>chOf[p.d]=p.ci);
@@ -1205,13 +1266,17 @@ const TL=[];{let d=START,n=0;const chOf={};PLAN.forEach(p=>chOf[p.d]=p.ci);
     const ci=chOf[d];let pod;
     if(n<=40)pod={t:`Coffee Break French 1:${pad(n)}`,s:"temporada 1, lição "+n+" (A1)",u:CBF,q:`Coffee Break French CBF 1:${pad(n)}`};
     else if(ci!=null)pod={t:"Journal en français facile",s:"o jornal do dia, 10 min, com transcrição no site da RFI",u:RFI,q:"Journal en français facile"};
+    else if(d>PH3_END)pod=n%2?{t:"Journal en français facile",s:"o jornal do dia (A2–B1)",u:RFI,q:"Journal en français facile"}:{t:"LanguaTalk Slow French",s:"um episódio, 99% em francês (A2–B1)",u:LTK,q:"LanguaTalk Slow French"};
     else pod={t:`Coffee Break French 2:${pad(n-52)}`,s:`temporada 2, lição ${n-52} (A2) + Journal en français facile`,u:CBF,q:`Coffee Break French CBF 2:${pad(n-52)}`};
     const pods=[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF,q:"Coffee Break French CBF 1:01"});
-    TL.push({d,n,ci:ci??null,pods});d=addD(d,1)}}
+    const dow=parse(d).getDay(),task=ci!=null?null:d<=PH3_END?"rev":dow===6?"sim":dow===3?"simp":"rev4";
+    TL.push({d,n,ci:ci??null,pods,task});d=addD(d,1)}}
 
 /* ---------- cartões e estado (Anki / SM-2) ---------- */
-const KIND={t:"traduza.fr",p:"diga-em-francês.pt",c:"complete.fr",r:"regra.md"};
-const all=[];CH.forEach((ch,ci)=>ch.c.forEach((c,i)=>all.push({ci,i,id:ci+"-"+i,k:c[0],f:c[1],b:c[2],n:c[3]||""})));
+const KIND={t:"traduza.fr",p:"diga-em-francês.pt",c:"complete.fr",r:"regra.md",v:"vocabulário.pt"};
+const all=[];CH.forEach((ch,ci)=>{ch.c.forEach((c,i)=>all.push({ci,i,id:ci+"-"+i,k:c[0],f:c[1],b:c[2],n:c[3]||""}));
+  (VOC[ci]?VOC[ci][1]:[]).forEach((c,i)=>all.push({ci,i,id:"v"+ci+"-"+i,k:"v",f:c[0],b:c[1],n:c[2]||""}))});
+const byCh=CH.map((_,ci)=>all.filter(c=>c.ci===ci));
 const SK="fiches-fr-srs-v1";
 let S=ls.get(SK,null);
 if(!S){S={};const old=ls.get("fiches-fr-v1",{});Object.entries(old).forEach(([id,v])=>{S[id]=v===1?{iv:1,ef:2.5,due:addD(today(),1),reps:1,lapses:0,last:2}:{iv:0,ef:2.5,due:today(),reps:1,lapses:1,last:0}});ls.set(SK,S)}
@@ -1230,8 +1295,8 @@ function sched(id,g){
   s.reps++;s.last=g;s.due=addD(today(),s.iv);return s;
 }
 const ivTxt=n=>n===0?"agora":n===1?"1 dia":n<7?n+" dias":n<30?Math.round(n/7)+" sem":n<365?Math.round(n/30)+" mês":"1 ano+";
-const chSeen=ci=>CH[ci].c.filter((_,i)=>seen(ci+"-"+i)).length;
-const chDone=ci=>chSeen(ci)===CH[ci].c.length;
+const chSeen=ci=>byCh[ci].filter(c=>seen(c.id)).length;
+const chDone=ci=>chSeen(ci)===byCh[ci].length;
 
 /* ---------- início ---------- */
 function todayInfo(){
@@ -1247,9 +1312,9 @@ function renderHome(){
   let html="";
   const dueTxt=due.length?`<b>${due.length}</b> revis${due.length>1?"ões":"ão"}`:"nenhuma revisão";
   if(target){
-    const ch=CH[target.ci],nNew=ch.c.length-chSeen(target.ci);
+    const ch=CH[target.ci],nNew=byCh[target.ci].length-chSeen(target.ci);
     html=`<span class="date mono">${fmt(t)}${target.d<t?` · atrasado de ${fmt(target.d)}`:""}</span>
-    <h2>hoje: capítulo ${target.ci+1}</h2><p class="ct">${esc(ch.t)} <span>· ${esc(ch.s)}</span></p>
+    <h2>hoje: capítulo ${target.ci+1}</h2><p class="ct">${esc(ch.t)} <span>· ${esc(ch.s)} · vocabulário: ${esc(VOC[target.ci][0])}</span></p>
     <p class="cnt">${dueTxt} + <b>${nNew}</b> ficha${nNew>1?"s":""} nova${nNew>1?"s":""}${late.length>1?` · mais ${late.length-1} capítulo${late.length>2?"s":""} atrasado${late.length>2?"s":""} depois deste`:""}</p>
     <button class="btn pri" id="bToday">estudar agora</button>`;
   }else{
@@ -1270,8 +1335,8 @@ function renderHome(){
   // capítulos
   let tot=0,sn=0,mat=0;
   $("list").innerHTML=CH.map((ch,ci)=>{
-    const n=ch.c.length,k=chSeen(ci);tot+=n;sn+=k;mat+=ch.c.filter((_,i)=>(S[ci+"-"+i]||{}).iv>=21).length;
-    return `<li><button class="ch${k===n?" full":""}" data-c="${ci}"><span class="n">${ci+1}</span><span><b>${esc(ch.t)}</b><small>${esc(ch.s)} · ${fmt(PLAN[ci].d)}</small><span class="pc"><span class="mini"><i style="width:${Math.round(k/n*100)}%"></i></span>${k}/${n}</span></span></button></li>`}).join("");
+    const n=byCh[ci].length,k=chSeen(ci);tot+=n;sn+=k;mat+=byCh[ci].filter(c=>(S[c.id]||{}).iv>=21).length;
+    return `<li><button class="ch${k===n?" full":""}" data-c="${ci}"><span class="n">${ci+1}</span><span><b>${esc(ch.t)}</b><small>${esc(ch.s)} · voc.: ${esc(VOC[ci][0])} · ${fmt(PLAN[ci].d)}</small><span class="pc"><span class="mini"><i style="width:${Math.round(k/n*100)}%"></i></span>${k}/${n}</span></span></button></li>`}).join("");
   $("gbar").style.width=(sn/tot*100)+"%";
   $("sub").textContent=`1 capítulo por dia, revisões no método do Anki. ${sn} de ${tot} fichas vistas, ${mat} já firmes (intervalo de 3+ semanas).`;
   $("bWrong").disabled=!all.some(c=>S[c.id]&&S[c.id].last===0);
@@ -1280,18 +1345,20 @@ function renderPlan(){
   const t=today();
   $("pSum").textContent=`${fmt(START)} → ${fmt(END)} · ${TL.length} dias de estudo, ${OFFS.length} folgas`;
   const dayOf=n=>TL.find(x=>x.n===n).d,lastCh=PLAN[PLAN.length-1].d,f2=k=>k.slice(8)+"/"+k.slice(5,7);
-  const ph=[["fase 1 · a1",`${f2(START)} → ${f2(dayOf(40))}`,"capítulos 1–40 + Coffee Break French temporada 1"],["fase 2 · a2",`${f2(dayOf(41))} → ${f2(lastCh)}`,"capítulos 41–52 + Journal en français facile"],["fase 3 · rumo ao b1",`${f2(addD(lastCh,1))} → ${f2(END)}`,"só revisões do Anki, temporada 2 do Coffee Break e o jornal"]];
-  $("phases").innerHTML=ph.map(p=>`<div class="ph"><b>${p[0]}</b><span class="mono">${p[1]}</span><small>${p[2]}</small></div>`).join("");
+  const ph=[["fase 1 · a1",`${f2(START)} → ${f2(dayOf(40))}`,"capítulos 1–40 + Coffee Break French temporada 1"],["fase 2 · a2",`${f2(dayOf(41))} → ${f2(lastCh)}`,"capítulos 41–52 + Journal en français facile"],["fase 3 · rumo ao b1",`${f2(addD(lastCh,1))} → ${f2(PH3_END)}`,"só revisões do Anki, temporada 2 do Coffee Break e o jornal"],["fase 4 · simulados",`${f2(addD(PH3_END,1))} → ${f2(END)}`,"simulado completo aos sábados, parcial às quartas; prova em abril"]];
+  $("phases").innerHTML=ph.map(p=>`<div class="ph"><b>${p[0]}</b><span class="mono">${p[1]}</span><small>${p[2]}</small></div>`).join("")+
+  `<details class="ph shd"><summary><b>shadowing: como fazer (5 min por dia)</b></summary><ol><li>Ouça o episódio do dia normalmente.</li><li>Volte num trecho curto, de 1 ou 2 frases.</li><li>Dê play e repita em voz alta <em>junto</em> com o áudio, imitando ritmo, entonação e as ligações (liaisons).</li><li>Repita o mesmo trecho 3 a 5 vezes, até sair sem travar. Faça 5 trechos.</li><li>No Spotify, ligue a transcrição para ler enquanto fala.</li></ol></details>`;
   let h="";const offShown={};
   TL.forEach(x=>{
     OFFS.forEach((o,k)=>{if(!offShown[k]&&x.d>o[1]){offShown[k]=1;h+=`<li class="off"><div class="d mono">${fmt(o[0])}${o[1]!==o[0]?"<br>"+fmt(o[1]):""}</div><div class="c"><b>${o[2]}</b><small>Sem capítulo novo. Se der vontade, as revisões continuam no início.</small></div></li>`}});
     const ch=x.ci!=null?CH[x.ci]:null,done=ch&&chDone(x.ci);
     const st=x.d===t?"now":done?"ok":x.d<t&&ch?"late":x.d<t?"past":"";
     h+=`<li class="${st}" ${x.d===t?'id="tlNow"':""}><div class="d mono">${fmt(x.d)}<span>dia ${x.n}</span></div><div class="c">
-      ${ch?`<b>cap. ${x.ci+1} · ${esc(ch.t)}</b><small>${esc(ch.s)}${BILAN[x.ci]?` · <strong>+ ${BILAN[x.ci]}</strong>`:""}</small>`:`<b>revisão</b><small>Faça as revisões do dia e 1 rodada de un/une.</small>`}
-      ${x.pods.map(p=>`<div class="pod"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small><span class="plinks"><a class="sp" href="https://open.spotify.com/search/${encodeURIComponent(p.q)}/episodes" target="_blank" rel="noopener">spotify ↗</a><a href="${p.u}" target="_blank" rel="noopener">site ↗</a></span></div>`).join("")}
+      ${ch?`<b>cap. ${x.ci+1} · ${esc(ch.t)}</b><small>${esc(ch.s)} · vocabulário: ${esc(VOC[x.ci][0])}${BILAN[x.ci]?` · <strong>+ ${BILAN[x.ci]}</strong>`:""}</small>`:x.task==="sim"?`<b>simulado completo do TCF</b><small>As 3 provas obrigatórias, cronometradas, em sequência: compreensão oral, estruturas da língua e compreensão escrita. Use os exemplos oficiais e um livro de preparação; anote o que errou e revise.</small><a class="pod" href="${FEI}" target="_blank" rel="noopener"><span class="mono">fazer</span><b>Exemplos oficiais do TCF</b><small>France Éducation international</small></a>`:x.task==="simp"?`<b>simulado parcial</b><small>Uma prova só, cronometrada: alterne entre compreensão oral e estruturas da língua.</small>`:`<b>revisão</b><small>Faça as revisões do dia e 1 rodada de un/une ou de conjugação.</small>`}
+      ${x.pods.map(p=>`<div class="pod"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small><span class="plinks"><a class="sp" href="https://open.spotify.com/search/${encodeURIComponent(p.q)}/episodes" target="_blank" rel="noopener">spotify ↗</a><a href="${p.u}" target="_blank" rel="noopener">site ↗</a><span class="shtag mono">+ shadowing 5 min</span></span></div>`).join("")}
       <div class="tacts">${ch?`<button class="btn sm" data-go="flip" data-c="${x.ci}">fichas</button><button class="btn sm" data-go="write" data-c="${x.ci}">escrever</button>`:`<button class="btn sm" data-go="due">revisões</button>`}${ch&&TENSES.find(z=>z[2]===x.ci)?`<button class="btn sm" data-go="conj" data-t="${TENSES.find(z=>z[2]===x.ci)[0]}">conjugação</button>`:""}<button class="btn sm" data-go="gen">un/une</button>${st==="ok"?'<span class="okk mono">feito</span>':st==="now"?'<span class="okk mono now">hoje</span>':st==="late"?'<span class="okk mono late">atrasado</span>':""}</div>
     </div></li>`});
+  h+=`<li class="goal"><div class="d mono">abril</div><div class="c"><b>TCF tout public</b><small>Faça a prova numa sessão de abril. O resultado sai em cerca de 15 dias e dá para refazer depois de 20 dias: assim sobra margem para tentar de novo antes de junho, se precisar.</small></div></li>`;
   $("tl").innerHTML=h;
 }
 function startToday(){
@@ -1371,6 +1438,8 @@ function cands(c){
   add(exp);add(exp.replace(/\(.*?\)/g,""));
   if(exp.includes(" — "))exp.split(" — ").slice(1).forEach(p=>{add(p);p.split(" / ").forEach(add)});
   exp.split(" / ").forEach(p=>{add(p);add(p.replace(/\(.*?\)/g,""));(p.match(/\(([^)]*)\)/g)||[]).forEach(m=>add(m.slice(1,-1).replace(/^ou /,"")))});
+  if(c.k==="v")[...set].forEach(e=>{const sw=e.replace(/^le /,"un ").replace(/^la /,"une ").replace(/^les /,"des ");if(sw!==e)add(sw);
+    const sw2=e.replace(/^un /,"le ").replace(/^une /,"la ");if(sw2!==e)add(sw2)});
   if(c.k==="c"&&c.f.includes("___")){
     let f=c.f.includes("→")?c.f.split("→").pop():c.f;f=f.replace(/\(.*?\)/g,"");
     const [pre,suf]=f.split("___").map(norm);
