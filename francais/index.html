@@ -161,9 +161,9 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
 .tl .c>b{font:800 19px/1.15 'Bricolage Grotesque',sans-serif}
 .tl .c>small{color:var(--mut);font-size:14px;margin-top:-6px}.tl .c>small strong{color:var(--ink)}
 .pod{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:baseline;text-decoration:none;color:var(--ink);border:2px dashed var(--line);border-radius:14px;padding:8px 12px}
-.pod span{grid-row:span 2;font-size:11px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:999px;padding:2px 8px}
+.pod>span.mono{grid-row:span 2;align-self:start;font-size:11px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:999px;padding:2px 8px}
 .pod b{font-size:15px}.pod small{font-size:13px;color:var(--mut)}
-.pod:hover{background:var(--pink)}
+
 .tacts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .btn.sm{min-height:40px;padding:6px 14px;font-size:14px;box-shadow:3px 3px 0 var(--sh)}
 .okk{font-size:12px;font-weight:600;margin-left:auto;border:2px solid var(--line);border-radius:999px;padding:2px 10px}
@@ -178,6 +178,9 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
 .btn.big{min-height:72px;font:800 28px 'Bricolage Grotesque',sans-serif}
 .gfb{max-width:620px;margin:24px auto 0;border:2.5px solid var(--line);border-radius:18px;padding:14px 16px;background:var(--white);box-shadow:5px 5px 0 var(--sh);display:grid;gap:4px}
 .gfb.ok{background:var(--pink)}.gfb b{font:800 22px 'Bricolage Grotesque',sans-serif}
+.plinks{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.plinks a{font:600 12px 'JetBrains Mono',monospace;text-decoration:none;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:6px 12px;min-height:32px;display:inline-flex;align-items:center;background:var(--white)}
+.plinks a.sp{background:var(--ink);color:var(--bg)}
 </style>
 <script>try{const t=localStorage.getItem("fiches-fr-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -1104,10 +1107,10 @@ const BILAN={14:"bilan 1 do livro",30:"bilan 2 do livro",44:"bilan 3 do livro",5
 const TL=[];{let d=START,n=0;const chOf={};PLAN.forEach(p=>chOf[p.d]=p.ci);
   while(d<=END){if(isOff(d)){d=addD(d,1);continue}n++;
     const ci=chOf[d];let pod;
-    if(n<=40)pod={t:`Coffee Break French 1:${pad(n)}`,s:"temporada 1, lição "+n+" (A1)",u:CBF};
-    else if(ci!=null)pod={t:"Journal en français facile",s:"o jornal do dia, 10 min, com transcrição",u:RFI};
-    else pod={t:`Coffee Break French 2:${pad(n-52)}`,s:`temporada 2, lição ${n-52} (A2) + Journal en français facile`,u:CBF};
-    const pods=[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF});
+    if(n<=40)pod={t:`Coffee Break French 1:${pad(n)}`,s:"temporada 1, lição "+n+" (A1)",u:CBF,q:`Coffee Break French CBF 1:${pad(n)}`};
+    else if(ci!=null)pod={t:"Journal en français facile",s:"o jornal do dia, 10 min, com transcrição no site da RFI",u:RFI,q:"Journal en français facile"};
+    else pod={t:`Coffee Break French 2:${pad(n-52)}`,s:`temporada 2, lição ${n-52} (A2) + Journal en français facile`,u:CBF,q:`Coffee Break French CBF 2:${pad(n-52)}`};
+    const pods=[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF,q:"Coffee Break French CBF 1:01"});
     TL.push({d,n,ci:ci??null,pods});d=addD(d,1)}}
 
 /* ---------- cartões e estado (Anki / SM-2) ---------- */
@@ -1190,7 +1193,7 @@ function renderPlan(){
     const st=x.d===t?"now":done?"ok":x.d<t&&ch?"late":x.d<t?"past":"";
     h+=`<li class="${st}" ${x.d===t?'id="tlNow"':""}><div class="d mono">${fmt(x.d)}<span>dia ${x.n}</span></div><div class="c">
       ${ch?`<b>cap. ${x.ci+1} · ${esc(ch.t)}</b><small>${esc(ch.s)}${BILAN[x.ci]?` · <strong>+ ${BILAN[x.ci]}</strong>`:""}</small>`:`<b>revisão</b><small>Faça as revisões do dia e 1 rodada de un/une.</small>`}
-      ${x.pods.map(p=>`<a class="pod" href="${p.u}" target="_blank" rel="noopener"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small></a>`).join("")}
+      ${x.pods.map(p=>`<div class="pod"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small><span class="plinks"><a class="sp" href="https://open.spotify.com/search/${encodeURIComponent(p.q)}/episodes" target="_blank" rel="noopener">spotify ↗</a><a href="${p.u}" target="_blank" rel="noopener">site ↗</a></span></div>`).join("")}
       <div class="tacts">${ch?`<button class="btn sm" data-go="flip" data-c="${x.ci}">fichas</button><button class="btn sm" data-go="write" data-c="${x.ci}">escrever</button>`:`<button class="btn sm" data-go="due">revisões</button>`}<button class="btn sm" data-go="gen">un/une</button>${st==="ok"?'<span class="okk mono">feito</span>':st==="now"?'<span class="okk mono now">hoje</span>':st==="late"?'<span class="okk mono late">atrasado</span>':""}</div>
     </div></li>`});
   $("tl").innerHTML=h;
