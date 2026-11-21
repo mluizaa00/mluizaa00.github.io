@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>fiches de français — luiza prestes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=JetBrains+Mono:wght@500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FF5C5C'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' font-family='sans-serif' font-weight='800' fill='%2316120F'%3Efr%3C/text%3E%3C/svg%3E">
+<style>
+/* VOICE: o mesmo do site da Luiza: neo-brutalista, divertido, direto
+   IDEA: pilha de fichas de estudo com borda grossa e sombra dura, como os cards do portfólio
+   PICTURE: a ficha grande no centro, gira para mostrar a resposta
+   COLOUR/TYPE: creme #F6F0E4, tinta #16120F, coral #FF5C5C, rosa #FFE5E3; Bricolage 800 + Space Grotesk + JetBrains Mono
+   LAYOUT: início = lista de capítulos; estudo = ficha e dois botões grandes na altura do polegar */
+:root{--bg:#F6F0E4;--ink:#16120F;--coral:#FF5C5C;--pink:#FFE5E3;--white:#FFFFFF;--mut:#5a524b}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.5 'Space Grotesk',system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent;
+background-image:linear-gradient(rgba(22,18,15,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(22,18,15,.08) 1px,transparent 1px);background-size:32px 32px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.mono{font-family:'JetBrains Mono',monospace}
+.nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:2.5px solid var(--ink)}
+.nav div{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pill{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;text-decoration:none;color:var(--ink);background:var(--white);border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;box-shadow:4px 4px 0 var(--ink)}
+.tag{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;background:var(--pink);border:2px dashed var(--ink);border-radius:999px;padding:5px 12px;transform:rotate(-3deg);display:inline-block}
+.top{max-width:1040px;margin:0 auto;padding:40px 20px 8px}
+.top h1{font:800 clamp(44px,9vw,76px)/.95 'Bricolage Grotesque','Space Grotesk',sans-serif;letter-spacing:-.03em;margin:0}
+.top h1 span{background:var(--coral);border:2.5px solid var(--ink);border-radius:16px;padding:0 10px;box-shadow:5px 5px 0 var(--ink);display:inline-block;transform:rotate(-1.5deg)}
+.top p{margin:18px 0 0;font-size:18px;max-width:560px}
+.bar{height:16px;border:2.5px solid var(--ink);border-radius:999px;background:var(--white);margin-top:16px;overflow:hidden;max-width:520px}
+.bar i{display:block;height:100%;background:var(--coral);width:0;transition:width .4s;border-right:2.5px solid var(--ink)}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 20px 64px}
+.acts{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.btn{min-height:48px;padding:12px 22px;border-radius:999px;border:2.5px solid var(--ink);background:var(--white);font-weight:700;box-shadow:5px 5px 0 var(--ink);transition:transform .15s,box-shadow .15s}
+.btn:hover:not([disabled]){transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.btn:active:not([disabled]){transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.btn.pri{background:var(--coral)}
+.btn[disabled]{opacity:.45;cursor:default;box-shadow:none}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px;list-style:none;margin:0;padding:0}
+.ch{display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:start;width:100%;height:100%;text-align:left;padding:16px 18px;border-radius:22px;border:2.5px solid var(--ink);background:var(--white);box-shadow:6px 6px 0 var(--ink);transition:transform .2s,box-shadow .2s}
+.ch:hover{transform:translate(-3px,-3px) rotate(-.4deg);box-shadow:9px 9px 0 var(--ink)}
+.ch .n{font:800 26px/1 'Bricolage Grotesque',sans-serif;background:var(--pink);border:2px solid var(--ink);border-radius:14px;height:52px;display:grid;place-items:center}
+.ch.full .n{background:var(--coral)}
+.ch b{display:block;font:800 19px/1.1 'Bricolage Grotesque',sans-serif}
+.ch small{color:var(--mut);font-size:14px;display:block;margin-top:4px}
+.ch .pc{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;margin-top:10px}
+.mini{flex:1;height:8px;border:2px solid var(--ink);border-radius:999px;background:var(--bg);overflow:hidden}
+.mini i{display:block;height:100%;background:var(--coral)}
+.hide{display:none!important}
+/* estudo */
+.sHead{display:flex;align-items:center;gap:12px;margin-bottom:16px;max-width:620px;margin-inline:auto}
+.sHead .t{flex:1}
+.sHead b{display:block;font:800 22px/1.05 'Bricolage Grotesque',sans-serif}
+.sHead small{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.back{width:48px;height:48px;border-radius:999px;border:2.5px solid var(--ink);background:var(--white);display:grid;place-items:center;flex:none;box-shadow:4px 4px 0 var(--ink)}
+.sHead .btn{min-height:44px;padding:8px 16px;font-size:14px;box-shadow:4px 4px 0 var(--ink)}
+.prog{height:14px;border:2.5px solid var(--ink);border-radius:999px;background:var(--white);overflow:hidden;margin:0 auto 22px;max-width:620px}
+.prog i{display:block;height:100%;background:var(--coral);width:0;transition:width .3s}
+.scene{perspective:1400px;margin:0 auto;max-width:620px}
+.card{position:relative;width:100%;min-height:min(56vh,420px);transform-style:preserve-3d;transition:transform .5s cubic-bezier(.3,.7,.3,1);cursor:pointer;border:0;padding:0;background:none;display:block}
+.card.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:22px;border:2.5px solid var(--ink);background:var(--white);box-shadow:10px 10px 0 var(--ink);
+display:flex;flex-direction:column;text-align:left;overflow:hidden}
+.face.b{transform:rotateY(180deg);background:var(--white)}
+.chrome{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:2.5px solid var(--ink);flex:none}
+.dots{display:flex;gap:6px}.dots i{width:11px;height:11px;border-radius:999px;border:2px solid var(--ink);background:var(--white)}
+.dots i:first-child{background:var(--coral)}.dots i:nth-child(2){background:var(--pink)}
+.kind{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.body{padding:20px 22px;display:flex;flex-direction:column;flex:1;overflow:auto;position:relative}
+.face.f .body{background:var(--pink)}
+.txt{font:800 clamp(28px,7vw,40px)/1.1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;margin:auto 0;padding:10px 0;overflow-wrap:anywhere}
+.face.b .txt{font-size:clamp(24px,6vw,34px);margin:12px 0 0;padding:0}
+.q{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--mut);overflow-wrap:anywhere;padding-right:52px}
+.note{margin-top:auto;align-self:flex-start;font-size:15px;background:var(--pink);border:2px solid var(--ink);border-radius:14px;padding:8px 12px;margin-top:18px;overflow-wrap:anywhere;transform:rotate(-1deg)}
+.note:empty{display:none}
+.note::before{content:"dica: ";font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px}
+.tap{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;text-align:center}
+.spk{position:absolute;right:16px;top:16px;width:46px;height:46px;border-radius:999px;border:2.5px solid var(--ink);background:var(--coral);display:grid;place-items:center;color:var(--ink);box-shadow:3px 3px 0 var(--ink);z-index:2}
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;max-width:620px;margin:26px auto 0}
+.tool{min-height:44px;padding:8px 16px;border-radius:999px;border:2.5px solid var(--ink);background:var(--white);font-weight:700;font-size:15px;box-shadow:4px 4px 0 var(--ink);display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}
+.tool svg{flex:none}
+.voice{flex:1 1 180px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.voice select{flex:1;min-height:44px;font:500 15px 'Space Grotesk',sans-serif;border:2.5px solid var(--ink);border-radius:14px;background:var(--white);color:var(--ink);padding:6px 10px}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:620px;margin:22px auto 0}
+.ans .btn{min-height:58px;font-size:18px}
+.yes{background:var(--coral)!important}
+.hint{text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;margin-top:14px}
+.done{text-align:center;padding:24px 10px;max-width:620px;margin:0 auto}
+.done h2{font:800 clamp(40px,8vw,60px)/.95 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;margin:0 0 14px}
+.done .acts{justify-content:center;margin-top:24px}
+@media (prefers-reduced-motion:reduce){.card,.btn,.ch,.bar i,.prog i{transition:none}}
+</style>
+</head>
+<body>
+<header class="nav"><div>
+  <a class="pill" href="/">luiza prestes</a>
+  <span class="tag">a1 → b1</span>
+</div></header>
+<section class="top" id="hero">
+  <h1>fiches de <span>français</span></h1>
+  <p id="sub">Flashcards por capítulo. Toque na ficha para virar.</p>
+  <div class="bar"><i id="gbar"></i></div>
+</section>
+
+<main class="wrap">
+  <section id="home">
+    <div class="acts">
+      <button class="btn pri" id="bMix">Misturar tudo</button>
+      <button class="btn" id="bWrong">Revisar as que errei</button>
+      <button class="btn" id="bReset">Zerar progresso</button>
+    </div>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section id="study" class="hide">
+    <div class="sHead">
+      <button class="back" id="bBack" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="t"><b id="sTitle"></b><small id="sCount"></small></div>
+      <button class="btn" id="bShuf">Embaralhar</button>
+    </div>
+    <div class="prog"><i id="sProg"></i></div>
+    <div id="deck">
+      <div class="scene">
+        <button class="card" id="card" aria-label="Virar cartão">
+          <div class="face f"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="kind" id="kF"></span></div><div class="body"><div class="txt" id="tF"></div><div class="tap">toque para ver a resposta</div></div></div>
+          <div class="face b"><div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="kind" id="kB"></span></div><div class="body"><div class="q" id="qB"></div><div class="txt" id="tB"></div><div class="note" id="nB"></div></div></div>
+        </button>
+      </div>
+      <div class="tools">
+        <button class="tool" id="bSpeak" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></svg>ouvir</button>
+        <a class="tool" id="aRev" href="https://dicionario.reverso.net/frances-portugues/" target="_blank" rel="noopener">reverso<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
+        <label class="voice hide" id="vWrap">voz <select id="vSel" aria-label="Voz em francês"></select></label>
+      </div>
+      <div class="ans">
+        <button class="btn" id="bNo">Errei</button>
+        <button class="btn yes" id="bYes">Acertei</button>
+      </div>
+      <p class="hint">As que você errar voltam no fim da rodada.</p>
+    </div>
+    <div class="done hide" id="done">
+      <h2 id="dT"></h2>
+      <p id="dP"></p>
+      <div class="acts">
+        <button class="btn pri" id="bAgain">Repetir capítulo</button>
+        <button class="btn" id="bHome">Ver capítulos</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// kinds: t = traduza (FR→PT), p = diga em francês (PT→FR), c = complete, r = regra
+const CH = [
+{t:"Le verbe « être »",s:"Ser/estar, pronomes sujeitos, à/de/chez",c:[
+["c","Je ___ brésilienne.","Je suis brésilienne.","être: je suis"],
+["c","Tu ___ fatigué ?","Tu es fatigué ?","tu es — mesmo som que est"],
+["c","Elle ___ à Lyon.","Elle est à Lyon.","il/elle/on est"],
+["c","Nous ___ en vacances.","Nous sommes en vacances.","nous sommes (com s)"],
+["c","Vous ___ d'où ?","Vous êtes d'où ?","vous êtes — liaison: vou-zète"],
+["c","Mes amis ___ italiens.","Mes amis sont italiens.","ils/elles sont"],
+["p","Eu sou de Curitiba.","Je suis de Curitiba.","origem: de + cidade"],
+["p","Estou em Lisboa.","Je suis à Lisbonne.","cidade → à"],
+["p","Estou na casa da Ana.","Je suis chez Ana.","pessoa → chez"],
+["p","Ela é de Orléans.","Elle est d'Orléans.","de + vogal → d'"],
+["r","Tu ou vous para falar com um desconhecido?","Vous","vous = formal (1 pessoa) ou plural; tu = íntimo"],
+["r","On est = ?","A gente está / a gente é","on conjuga como il, mas significa “nós” informal"],
+["t","Vous êtes prêts, les enfants ?","Vocês estão prontos, crianças?","plural → vous"]]},
+
+{t:"L'adjectif (1)",s:"Masculino/feminino, singular/plural",c:[
+["p","Ele é alto. / Ela é alta.","Il est grand. / Elle est grande.","feminino: + e (o d passa a soar)"],
+["p","Ele é suíço. / Ela é suíça.","Il est suisse. / Elle est suisse.","terminado em -e: não muda"],
+["c","Elle est (italien) ___.","Elle est italienne.","-ien → -ienne"],
+["c","Elle est (sportif) ___.","Elle est sportive.","-f → -ve"],
+["c","Elle est (heureux) ___.","Elle est heureuse.","-eux → -euse"],
+["c","Elle est (cher) ___.","Elle est chère.","-er → -ère"],
+["c","Elle est (beau) ___.","Elle est belle.","irregulares: beau/belle, nouveau/nouvelle, vieux/vieille"],
+["c","Ils sont (normal) ___.","Ils sont normaux.","-al → -aux"],
+["c","Elles sont (blond) ___.","Elles sont blondes.","feminino plural: + es"],
+["r","Marie et Paul sont ___ (content).","contents","grupo misto → masculino plural"],
+["r","Nacionalidade como adjetivo: maiúscula ou minúscula?","Minúscula: il est français","Maiúscula só para o substantivo: un Français"],
+["t","Vous êtes prête, madame ?","A senhora está pronta?","vous formal singular → adjetivo no singular"]]},
+
+{t:"La négation et l'interrogation (1)",s:"ne…pas, est-ce que, oui/si",c:[
+["p","Não sou francesa.","Je ne suis pas française.","ne + verbo + pas"],
+["p","Ele não está aqui.","Il n'est pas là.","ne + vogal → n'"],
+["r","3 jeitos de perguntar “Você está cansado?”","Tu es fatigué ? / Est-ce que tu es fatigué ? / Es-tu fatigué ?","entonação (fala), est-ce que (neutro), inversão (formal)"],
+["c","___ vous êtes libre ?","Est-ce que vous êtes libre ?","est-ce que + frase normal"],
+["r","Responder SIM a uma pergunta negativa: “Tu n'es pas content ?”","Si !","si = sim, contradizendo uma negativa"],
+["p","Eu também (afirmativo).","Moi aussi.","aussi = também"],
+["p","Eu também não.","Moi non plus.","non plus = também não"],
+["t","Vous n'êtes pas de Paris ? — Si, je suis de Paris.","Você não é de Paris? — Sou sim.",""],
+["t","Est-il marié ?","Ele é casado?","inversão: verbo-sujeito com hífen"]]},
+
+{t:"Le nom et l'article",s:"Gênero, plural, artigos, contrações",c:[
+["r","Artigos definidos","le, la, l', les","o, a, os, as"],
+["r","Artigos indefinidos","un, une, des","um, uma, uns/umas"],
+["p","a escola","l'école","le/la + vogal → l'"],
+["c","à + le cinéma =","au cinéma","à + le → au"],
+["c","à + les États-Unis =","aux États-Unis","à + les → aux"],
+["c","de + le boulanger =","du boulanger","de + le → du"],
+["c","de + les voisins =","des voisins","de + les → des"],
+["r","à la / à l' / de la / de l' contraem?","Não","só le e les contraem"],
+["r","un journal → plural?","des journaux","-al → -aux"],
+["r","un gâteau → plural?","des gâteaux","-eau → -eaux"],
+["r","le problème: masculino ou feminino?","Masculino","-ème é geralmente masculino"],
+["r","la nation: gênero de -tion?","Feminino","-tion, -sion, -té → geralmente femininos"]]},
+
+{t:"« C'est » et « il est »",s:"Identificar vs. descrever",c:[
+["r","C'est ou il est + nome com artigo?","C'est","c'est un ami / c'est mon frère"],
+["r","C'est ou il est + adjetivo (pessoa)?","Il est","il est gentil"],
+["p","É o Paul. Ele é simpático.","C'est Paul. Il est sympathique.",""],
+["p","Ela é médica.","Elle est médecin.","profissão sem artigo depois de il/elle est"],
+["p","É uma médica excelente.","C'est un médecin excellent.","com adjetivo → c'est un(e)"],
+["p","São meus pais.","Ce sont mes parents.","plural: ce sont"],
+["t","C'est beau !","Que lindo! / É bonito!","c'est + adjetivo = comentário geral"],
+["r","Il est 8 heures. Qual é o il?","Il impessoal","hora usa sempre il est"]]},
+
+{t:"Les possessifs",s:"mon/ma/mes, le mien…",c:[
+["r","meu / minha / meus","mon / ma / mes",""],
+["r","teu / tua / teus","ton / ta / tes",""],
+["r","seu/sua (dele/dela) / seus","son / sa / ses","concorda com a COISA, não com o dono"],
+["r","nosso(a) / nossos","notre / nos",""],
+["r","seu(sua) de vocês / seus","votre / vos",""],
+["r","deles / delas (1 coisa / várias)","leur / leurs",""],
+["p","minha amiga","mon amie","ma + vogal → mon"],
+["p","a mala dele","sa valise","valise é feminino → sa, mesmo sendo dele"],
+["p","É o meu (livro).","C'est le mien.","le mien, la mienne, les miens, les miennes"],
+["p","É a sua (tu) bolsa? É a tua.","C'est la tienne.",""],
+["t","Ce sont les nôtres.","São os nossos.","le nôtre / la nôtre / les nôtres"]]},
+
+{t:"Les noms de parenté et de groupe",s:"Família e coletivos",c:[
+["t","les parents","os pais (ou parentes)",""],
+["t","les grands-parents","os avós",""],
+["t","le fils / la fille","o filho / a filha","fils: pronuncia “fiss”"],
+["t","les enfants","os filhos / as crianças",""],
+["t","le neveu / la nièce","o sobrinho / a sobrinha",""],
+["t","le beau-père / la belle-mère","o sogro (ou padrasto) / a sogra (ou madrasta)",""],
+["t","le cousin / la cousine","o primo / a prima",""],
+["p","marido / esposa","le mari / la femme","femme = mulher e esposa"],
+["t","Toute la famille est là.","A família toda está aqui.","coletivo no singular → verbo no singular"],
+["t","Les gens sont sympas.","As pessoas são simpáticas.","les gens é plural"]]},
+
+{t:"Les démonstratifs",s:"ce/cet/cette/ces, celui-ci",c:[
+["r","este/esse (masc.)","ce","ce livre"],
+["r","este/esse (masc. + vogal/h mudo)","cet","cet ami, cet hôtel"],
+["r","esta/essa","cette","cette robe"],
+["r","estes/estas","ces","ces chaussures"],
+["p","Quero este bolo.","Je voudrais ce gâteau.",""],
+["p","este homem","cet homme","h mudo → cet"],
+["p","Este aqui (masc.) / Esta aqui (fem.)","celui-ci / celle-ci","pronomes: evitam repetir o nome"],
+["p","Estes aqui / Estas aqui","ceux-ci / celles-ci",""],
+["t","Je préfère celui-là.","Prefiro aquele.","-ci = perto, -là = longe"],
+["t","Ça, c'est intéressant.","Isso é interessante.","ça = isso (informal de cela)"]]},
+
+{t:"« Il y a » et « c'est »",s:"Existir vs. identificar",c:[
+["p","Tem um gato no jardim.","Il y a un chat dans le jardin.","il y a = há / tem (existência)"],
+["p","Não tem pão.","Il n'y a pas de pain.","negativa: pas de"],
+["p","É um siamês.","C'est un siamois.","c'est identifica o que foi apresentado"],
+["p","Tem quê?","Qu'est-ce qu'il y a ?","também: “O que houve?”"],
+["t","Il y a beaucoup de monde.","Tem muita gente.",""],
+["t","Dans ma rue, il y a une boulangerie. C'est la meilleure du quartier.","Na minha rua tem uma padaria. É a melhor do bairro.","il y a apresenta, c'est comenta"],
+["r","il y a + tempo passado (il y a deux ans)","há dois anos (atrás)","também marca tempo decorrido"]]},
+
+{t:"La situation dans l'espace (1)",s:"Cidades, países, preposições de lugar",c:[
+["r","Cidade","à Paris","à + cidade"],
+["r","País feminino (termina em -e)","en France, en Italie",""],
+["r","País masculino","au Brésil, au Japon","à + le → au"],
+["r","País plural","aux États-Unis","à + les → aux"],
+["r","País masculino com vogal","en Iran, en Israël","vogal → en"],
+["p","Moro no Brasil, em São Paulo.","J'habite au Brésil, à São Paulo.",""],
+["p","em cima da mesa / embaixo da mesa","sur la table / sous la table",""],
+["p","na frente do cinema / atrás do cinema","devant le cinéma / derrière le cinéma",""],
+["p","perto da estação / longe da estação","près de la gare / loin de la gare",""],
+["p","ao lado do banco","à côté de la banque",""],
+["t","entre la poste et le café","entre o correio e o café",""],
+["t","dans le bus / sur le bus","dentro do ônibus / em cima (na lataria) do ônibus",""]]},
+
+{t:"Le verbe « avoir »",s:"Ter, idade, descrições, expressões",c:[
+["r","avoir no presente","j'ai, tu as, il a, nous avons, vous avez, ils ont","ils ont (z) ≠ ils sont (s)"],
+["p","Tenho 22 anos.","J'ai vingt-deux ans.","idade usa avoir, não être!"],
+["p","Ela tem olhos azuis.","Elle a les yeux bleus.","partes do corpo com artigo definido"],
+["p","Estou com fome / sede.","J'ai faim / J'ai soif.",""],
+["p","Estou com calor / frio.","J'ai chaud / J'ai froid.",""],
+["p","Estou com sono / medo.","J'ai sommeil / J'ai peur.",""],
+["p","Você tem razão.","Tu as raison.","avoir tort = estar errado"],
+["p","Preciso de um táxi.","J'ai besoin d'un taxi.","avoir besoin de"],
+["t","Il a l'air fatigué.","Ele parece cansado.","avoir l'air = parecer"],
+["p","Não tenho carro.","Je n'ai pas de voiture.","negativa: un/une/des → de"],
+["t","J'ai mal à la tête.","Estou com dor de cabeça.","avoir mal à + parte do corpo"]]},
+
+{t:"L'adjectif (2)",s:"Posição, adjetivos especiais",c:[
+["r","Em geral o adjetivo vem antes ou depois do nome?","Depois: une voiture rouge",""],
+["r","Adjetivos curtos que vêm ANTES","beau, joli, bon, mauvais, grand, petit, jeune, vieux, nouveau, gros","un petit chat, une jolie maison"],
+["p","um belo apartamento","un bel appartement","beau → bel antes de vogal"],
+["p","um velho hotel","un vieil hôtel","vieux → vieil"],
+["p","um novo amigo","un nouvel ami","nouveau → nouvel"],
+["t","un grand homme / un homme grand","um grande homem (importante) / um homem alto","posição muda o sentido"],
+["t","mon ancien bureau / un bureau ancien","meu antigo (ex-) escritório / um escritório velho",""],
+["t","un cher ami / un sac cher","um querido amigo / uma bolsa cara",""],
+["r","des + adjetivo antes do nome","de: de jolies fleurs","no escrito formal"]]},
+
+{t:"Les nombres",s:"Cardinais e ordinais",c:[
+["p","70","soixante-dix","60 + 10"],
+["p","71","soixante et onze",""],
+["p","80","quatre-vingts","4 × 20 (com s)"],
+["p","81","quatre-vingt-un","sem s e sem “et”"],
+["p","90","quatre-vingt-dix",""],
+["p","99","quatre-vingt-dix-neuf",""],
+["p","21","vingt et un","et só em 21, 31, 41, 51, 61, 71"],
+["p","200 / 203","deux cents / deux cent trois","cents perde o s se vem outro número"],
+["p","1 000 / 2 000","mille / deux mille","mille nunca leva s"],
+["p","primeiro / primeira","premier / première",""],
+["p","segundo / terceiro","deuxième (ou second) / troisième",""],
+["p","nono","neuvième","neuf → neuv-"],
+["t","six enfants / six livres","seis filhos (siz-ã) / seis livros (si-livr)","6 e 10: x muda conforme a próxima palavra"]]},
+
+{t:"Le temps (1)",s:"Data, hora, estações, clima",c:[
+["p","Que dia é hoje?","On est quel jour ? / Quel jour sommes-nous ?",""],
+["p","Hoje é 3 de março.","Nous sommes le 3 mars.","dia: le + número"],
+["p","1º de maio","le 1er mai (le premier mai)","só o dia 1 é ordinal"],
+["p","no verão / no outono / no inverno","en été / en automne / en hiver",""],
+["p","na primavera","au printemps","única com au"],
+["p","Que horas são?","Quelle heure est-il ?",""],
+["p","São 3h15. / 3h30. / 3h45.","Il est trois heures et quart. / et demie. / quatre heures moins le quart.",""],
+["p","meio-dia / meia-noite","midi / minuit",""],
+["p","Está fazendo sol. / Está chovendo.","Il fait beau. / Il pleut.",""],
+["p","Está frio. / Está calor.","Il fait froid. / Il fait chaud.",""],
+["t","Il neige.","Está nevando.",""],
+["t","Quel temps fait-il ?","Como está o tempo?",""]]},
+
+{t:"Les indéfinis",s:"tout, quelques, plusieurs, aucun, chaque",c:[
+["p","todos os dias","tous les jours",""],
+["p","o dia todo","toute la journée",""],
+["p","todas as noites","toutes les nuits",""],
+["p","cada aluno","chaque élève","chaque + singular"],
+["p","alguns amigos","quelques amis",""],
+["p","vários livros","plusieurs livres","plusieurs não varia"],
+["p","Não tenho nenhuma ideia.","Je n'ai aucune idée.","aucun(e) + ne"],
+["t","Certains sont bilingues, d'autres non.","Alguns são bilíngues, outros não.",""],
+["t","Quelqu'un a appelé.","Alguém ligou.",""],
+["t","Tout le monde est là.","Todo mundo está aqui.","tout le monde = todo mundo (singular)"]]},
+
+{t:"Les verbes en « -er » au présent",s:"parler, manger, acheter, appeler…",c:[
+["r","Terminações -er","-e, -es, -e, -ons, -ez, -ent","je parle, tu parles, il parle, nous parlons, vous parlez, ils parlent"],
+["r","Quais terminações são mudas?","-e, -es, -e, -ent","só -ons e -ez soam"],
+["c","Nous (manger) ___.","Nous mangeons.","g + eons para manter som de j"],
+["c","Nous (commencer) ___.","Nous commençons.","c → ç antes de o"],
+["c","J'(acheter) ___ du pain.","J'achète du pain.","e → è nas formas mudas"],
+["c","Je (préférer) ___ le thé.","Je préfère le thé.","é → è (je, tu, il, ils)"],
+["c","Je m'(appeler) ___ Luiza.","Je m'appelle Luiza.","l → ll; nous appelons"],
+["c","Tu (payer) ___ ?","Tu paies ? (ou tu payes)","-yer: y → i"],
+["p","Eu moro em São Carlos.","J'habite à São Carlos.","je + h mudo → j'"],
+["t","Ils travaillent le samedi.","Eles trabalham aos sábados.","-ent mudo: “travaille”"]]},
+
+{t:"Le temps (2)",s:"Duração no presente",c:[
+["p","Moro aqui há 5 anos.","J'habite ici depuis cinq ans.","depuis + presente: continua agora"],
+["p","Estudo francês desde novembro.","J'apprends le français depuis novembre.",""],
+["p","Vou para Paris por um mês.","Je pars à Paris pour un mois.","pour = duração prevista"],
+["p","Trabalho das 9h às 18h.","Je travaille de 9 heures à 18 heures.","de… à…"],
+["p","Há quanto tempo você mora aqui?","Depuis combien de temps tu habites ici ?",""],
+["t","Ça fait deux heures que j'attends.","Faz duas horas que estou esperando.","ça fait… que = depuis"],
+["t","Il y a dix minutes que je suis là.","Estou aqui há dez minutos.",""]]},
+
+{t:"L'adverbe",s:"bien, mal, vite, -ment",c:[
+["r","Adjetivo ou advérbio? Il parle ___ (bom).","bien","bien = advérbio; bon = adjetivo"],
+["p","Ela fala bem francês.","Elle parle bien français.","advérbio depois do verbo"],
+["c","lent → advérbio","lentement","feminino + ment: lente + ment"],
+["c","rapide → advérbio","rapidement","termina em -e: + ment"],
+["c","vrai → advérbio","vraiment","vogal: masculino + ment"],
+["c","évident → advérbio","évidemment","-ent → -emment (som de “amã”)"],
+["c","constant → advérbio","constamment","-ant → -amment"],
+["p","raramente / frequentemente","rarement / souvent",""],
+["p","sempre / nunca","toujours / ne… jamais",""],
+["t","Il comprend vite.","Ele entende rápido.","vite = rapidamente"]]},
+
+{t:"L'expression de la quantité",s:"du, de la, beaucoup de…",c:[
+["r","Partitivos (quantidade indeterminada)","du, de la, de l', des","je mange du pain"],
+["p","Bebo água.","Je bois de l'eau.",""],
+["p","Como queijo e salada.","Je mange du fromage et de la salade.",""],
+["p","Não como carne.","Je ne mange pas de viande.","negativa: du/de la → de"],
+["p","Bebo muito café.","Je bois beaucoup de café.","beaucoup de + sem artigo"],
+["p","um pouco de açúcar","un peu de sucre",""],
+["p","um quilo de tomates","un kilo de tomates",""],
+["p","uma garrafa de vinho","une bouteille de vin",""],
+["r","J'aime ___ chocolat.","le","gostos (aimer, adorer, détester) → artigo definido"],
+["t","Assez de temps / trop de travail","Tempo suficiente / trabalho demais",""]]},
+
+{t:"Le pronom « en »",s:"Substitui de + coisa / quantidade",c:[
+["p","Você tem irmãos? — Tenho dois.","Tu as des frères ? — J'en ai deux.","en + número no fim"],
+["p","Você quer café? — Sim, quero.","Tu veux du café ? — Oui, j'en veux.",""],
+["p","Não tenho (nenhum).","Je n'en ai pas.",""],
+["p","Ela fala muito disso.","Elle en parle beaucoup.","parler de → en"],
+["t","Tu reviens de Rome ? — Oui, j'en reviens.","Você está voltando de Roma? — Sim, estou voltando de lá.","de + lugar → en"],
+["t","Il y en a trois.","Tem três (deles).","il y en a: muito usado"],
+["r","Onde fica o en?","Antes do verbo conjugado","je n'en veux pas"]]},
+
+{t:"La situation dans l'espace (2)",s:"Regiões, origem: de/du/des",c:[
+["p","Venho da França.","Je viens de France.","país feminino → de"],
+["p","Venho do Brasil.","Je viens du Brésil.","país masculino → du"],
+["p","Venho dos EUA.","Je viens des États-Unis.",""],
+["p","Venho de Marselha.","Je viens de Marseille.","cidade → de"],
+["p","na Bretanha / na Provence","en Bretagne / en Provence","regiões femininas: en"],
+["t","Il habite au Québec.","Ele mora no Quebec.",""],
+["t","dans le Sud de la France","no sul da França",""]]},
+
+{t:"Le comparatif et le superlatif",s:"plus, moins, aussi, le plus",c:[
+["p","Paris é maior que Lyon.","Paris est plus grand que Lyon.","plus… que"],
+["p","O trem é menos caro que o avião.","Le train est moins cher que l'avion.","moins… que"],
+["p","Ela é tão alta quanto eu.","Elle est aussi grande que moi.","aussi + adjetivo"],
+["p","Ele trabalha tanto quanto você.","Il travaille autant que toi.","verbo + autant"],
+["p","Tenho tantos livros quanto você.","J'ai autant de livres que toi.","autant de + nome"],
+["p","É o hotel mais caro da cidade.","C'est l'hôtel le plus cher de la ville.","superlativo: le plus… de"],
+["p","Este bolo é melhor.","Ce gâteau est meilleur.","bon → meilleur (adjetivo)"],
+["p","Ela cozinha melhor que eu.","Elle cuisine mieux que moi.","bien → mieux (advérbio)"],
+["p","É o melhor restaurante.","C'est le meilleur restaurant.",""],
+["r","“Plus bon” existe?","Não: meilleur","nem “plus bien” → mieux"]]},
+
+{t:"Le verbe « aller »",s:"Ir, ir de + transporte",c:[
+["r","aller no presente","je vais, tu vas, il va, nous allons, vous allez, ils vont",""],
+["p","Vou ao cinema.","Je vais au cinéma.",""],
+["p","Vamos à praia.","On va à la plage.",""],
+["p","Vou ao médico.","Je vais chez le médecin.","pessoa → chez"],
+["p","Vou de trem / de avião.","Je vais en train / en avion.","veículo fechado → en"],
+["p","Vou a pé / de bicicleta.","Je vais à pied / à vélo.","sem cabine → à"],
+["p","Tudo bem? — Tudo, e você?","Ça va ? — Ça va, et toi ?",""],
+["t","Comment allez-vous ?","Como vai o senhor/a senhora?","formal"]]},
+
+{t:"Le pronom « y »",s:"Substitui à + lugar/coisa",c:[
+["p","Você vai a Roma? — Sim, vou (lá).","Tu vas à Rome ? — Oui, j'y vais.","y = lá"],
+["p","Ela mora em Paris? — Sim, mora.","Elle habite à Paris ? — Oui, elle y habite.",""],
+["p","Não vou (lá).","Je n'y vais pas.",""],
+["p","Vamos!","On y va !","expressão muito comum"],
+["t","Tu penses à ton examen ? — Oui, j'y pense.","Você pensa na sua prova? — Sim, penso nela.","penser à + coisa → y"],
+["r","Pessoa com à: “Je pense à Marie” → ?","Je pense à elle.","y não substitui pessoa"],
+["t","Il y a…","Há…","o y de il y a é esse mesmo pronome"]]},
+
+{t:"Situation dans l'espace et le temps",s:"à, en, dans, pendant, vers…",c:[
+["p","Em 2027 (ano)","en 2027",""],
+["p","Em março","en mars (ou au mois de mars)",""],
+["p","às 8 horas","à 8 heures","à = ponto exato"],
+["p","daqui a 10 minutos","dans dix minutes","dans = depois de um prazo"],
+["p","Faço em 10 minutos.","Je le fais en dix minutes.","en = duração necessária"],
+["p","por volta das 20h","vers 20 heures",""],
+["p","durante as férias","pendant les vacances",""],
+["p","até amanhã","jusqu'à demain",""],
+["t","entre midi et deux","entre meio-dia e duas",""]]},
+
+{t:"Verbes en -ir, -re, -oir au présent",s:"finir, partir, prendre, faire, pouvoir…",c:[
+["r","finir (2º grupo)","je finis, tu finis, il finit, nous finissons, vous finissez, ils finissent","-iss- no plural"],
+["r","partir","je pars, tu pars, il part, nous partons, vous partez, ils partent","como sortir, dormir"],
+["r","prendre","je prends, tu prends, il prend, nous prenons, vous prenez, ils prennent","como apprendre, comprendre"],
+["r","faire","je fais, tu fais, il fait, nous faisons, vous faites, ils font",""],
+["r","pouvoir","je peux, tu peux, il peut, nous pouvons, vous pouvez, ils peuvent",""],
+["r","vouloir","je veux, tu veux, il veut, nous voulons, vous voulez, ils veulent",""],
+["r","devoir","je dois, tu dois, il doit, nous devons, vous devez, ils doivent",""],
+["r","savoir","je sais, tu sais, il sait, nous savons, vous savez, ils savent",""],
+["r","boire","je bois, tu bois, il boit, nous buvons, vous buvez, ils boivent",""],
+["r","mettre","je mets, tu mets, il met, nous mettons, vous mettez, ils mettent",""],
+["r","venir","je viens, tu viens, il vient, nous venons, vous venez, ils viennent",""],
+["p","Sei nadar.","Je sais nager.","savoir = habilidade aprendida"],
+["p","Conheço Paris.","Je connais Paris.","connaître + lugar/pessoa"],
+["p","É preciso partir.","Il faut partir.","falloir: só il faut"],
+["t","Il fait du piano.","Ele toca piano / faz piano.","faire du/de la + atividade"]]},
+
+{t:"Les verbes pronominaux",s:"se lever, s'appeler…",c:[
+["r","se coucher no presente","je me couche, tu te couches, il se couche, nous nous couchons, vous vous couchez, ils se couchent",""],
+["p","Eu me chamo Luiza.","Je m'appelle Luiza.",""],
+["p","Acordo às 7h.","Je me réveille à 7 heures.",""],
+["p","Eu me levanto cedo.","Je me lève tôt.",""],
+["p","Ele não se barbeia.","Il ne se rase pas.","ne + pronome + verbo + pas"],
+["t","Ils se téléphonent tous les jours.","Eles se ligam todos os dias.","recíproco"],
+["t","Dépêche-toi !","Anda logo! / Apresse-se!","imperativo: pronome depois, toi"],
+["t","Je m'en vais.","Estou indo embora.",""]]},
+
+{t:"Les pronoms compléments",s:"le, la, les, lui, leur",c:[
+["p","Vejo o filme → Eu o vejo.","Je regarde le film → Je le regarde.","COD: le, la, l', les"],
+["p","Eu a conheço (Marie).","Je la connais.",""],
+["p","Eu os amo.","Je les aime.","liaison: lé-zème"],
+["p","Ligo para minha mãe → Ligo para ela.","Je téléphone à ma mère → Je lui téléphone.","COI (à + pessoa): lui, leur"],
+["p","Escrevo para eles.","Je leur écris.","leur sem s (pronome)"],
+["p","Ele me ama.","Il m'aime.","me, te, nous, vous: direto e indireto"],
+["p","Eu não o vejo.","Je ne le vois pas.","pronome antes do verbo"],
+["r","Ordem com 2 pronomes","me/te/nous/vous → le/la/les → lui/leur → y → en","Je le lui donne."],
+["t","Je te le donne.","Eu te dou (isso).",""]]},
+
+{t:"Les pronoms toniques",s:"moi, toi, lui, elle, nous, vous, eux, elles",c:[
+["r","Pronomes tônicos","moi, toi, lui, elle, nous, vous, eux, elles",""],
+["p","Eu, eu sou brasileira.","Moi, je suis brésilienne.","ênfase"],
+["p","com ela / sem eles","avec elle / sans eux","depois de preposição"],
+["p","na minha casa / na casa deles","chez moi / chez eux",""],
+["p","E você?","Et toi ? / Et vous ?",""],
+["p","Sou eu!","C'est moi !",""],
+["t","Lui aussi.","Ele também.",""],
+["t","Ce livre est à moi.","Este livro é meu.","être à + tônico = posse"]]},
+
+{t:"L'impératif",s:"Ordens e conselhos",c:[
+["r","Formas do imperativo","tu, nous, vous — sem sujeito","Viens ! Venons ! Venez !"],
+["c","(parler) ___ plus fort ! (tu)","Parle plus fort !","-er: tu perde o s"],
+["p","Venha! (tu)","Viens !",""],
+["p","Vamos! (nós)","Allons-y !",""],
+["p","Pegue seu casaco! (tu)","Prends ton manteau !",""],
+["p","Seja gentil! (tu)","Sois gentil !","être: sois, soyons, soyez"],
+["p","Não tenha medo! (vous)","N'ayez pas peur !","avoir: aie, ayons, ayez"],
+["p","Levante-se! (tu)","Lève-toi !",""],
+["p","Não se levante! (tu)","Ne te lève pas !","negativo: pronome volta para antes"],
+["p","Dê para mim! (tu)","Donne-le-moi !",""]]},
+
+{t:"Le conditionnel (1)",s:"Polidez, conselho",c:[
+["p","Eu gostaria de um café.","Je voudrais un café.","vouloir → voudrais"],
+["p","Você poderia me ajudar?","Pourriez-vous m'aider ?","pouvoir → pourrais"],
+["p","Você deveria descansar.","Tu devrais te reposer.","devoir → devrais = conselho"],
+["p","Eu adoraria ir.","J'aimerais bien y aller.",""],
+["r","Terminações do condicional","-ais, -ais, -ait, -ions, -iez, -aient","radical do futuro + terminações do imparfait"],
+["t","Ce serait parfait.","Seria perfeito.","être → serait"]]},
+
+{t:"Les relatifs",s:"qui, que, où, dont, lequel",c:[
+["r","qui substitui…","o sujeito","la femme qui chante"],
+["r","que substitui…","o objeto direto","la femme que j'aime"],
+["r","où substitui…","lugar ou tempo","la ville où j'habite / le jour où…"],
+["r","dont substitui…","de + complemento","le livre dont je parle (parler de)"],
+["p","O homem que mora aqui.","L'homme qui habite ici.",""],
+["p","O filme que eu vi.","Le film que j'ai vu.",""],
+["p","A cidade onde nasci.","La ville où je suis née.",""],
+["p","O amigo de quem te falei.","L'ami dont je t'ai parlé.",""],
+["p","no dia em que te conheci","le jour où je t'ai rencontré(e)","“em que” temporal = où"],
+["t","le projet sur lequel je travaille","o projeto no qual estou trabalhando","preposição + lequel/laquelle"],
+["t","C'est ce que je veux.","É isso que eu quero.","ce que / ce qui = o que"]]},
+
+{t:"L'interrogation (2)",s:"où, quand, comment, quel…",c:[
+["p","Onde você mora?","Où habitez-vous ? / Tu habites où ?",""],
+["p","Quando você parte?","Quand partez-vous ?",""],
+["p","Como você se chama?","Comment tu t'appelles ?",""],
+["p","Por quê? — Porque…","Pourquoi ? — Parce que…",""],
+["p","Quanto custa?","Combien ça coûte ?",""],
+["p","O que você faz?","Qu'est-ce que tu fais ?","que = coisa"],
+["p","Quem você procura?","Qui cherchez-vous ?","qui = pessoa"],
+["c","___ heure est-il ?","Quelle heure est-il ?","quel/quelle/quels/quelles concorda"],
+["c","___ sont tes films préférés ?","Quels sont tes films préférés ?",""],
+["t","Quel beau temps !","Que tempo bonito!","quel exclamativo"],
+["t","Lequel préférez-vous ?","Qual (deles) o senhor prefere?",""]]},
+
+{t:"La négation (2)",s:"rien, jamais, personne, plus…",c:[
+["p","Não faço nada.","Je ne fais rien.",""],
+["p","Nunca saio.","Je ne sors jamais.",""],
+["p","Não conheço ninguém.","Je ne connais personne.",""],
+["p","Não fumo mais.","Je ne fume plus.","ne… plus = não mais"],
+["p","Ainda não.","Pas encore.",""],
+["p","Nem segunda nem terça.","Ni lundi ni mardi.","ne… ni… ni"],
+["p","Trabalho só três dias.","Je ne travaille que trois jours.","ne… que = só (não é negação)"],
+["p","Ninguém veio.","Personne n'est venu.","sujeito: personne/rien + ne"],
+["t","Rien ne marche !","Nada funciona!",""],
+["r","Na fala informal, o ne…","costuma cair: “Je sais pas”","escreva sempre com ne"]]},
+
+{t:"Le discours indirect au présent",s:"Il dit que… il demande si…",c:[
+["p","Ele diz que está cansado.","Il dit qu'il est fatigué.",""],
+["p","Ela pergunta se você vem.","Elle demande si tu viens.","pergunta sim/não → si"],
+["p","Ele pergunta onde moro.","Il demande où j'habite.",""],
+["p","Ele pergunta o que eu quero.","Il demande ce que je veux.","qu'est-ce que → ce que"],
+["p","Ela pergunta o que está acontecendo.","Elle demande ce qui se passe.","qu'est-ce qui → ce qui"],
+["t","Il me dit de venir.","Ele me diz para vir.","imperativo → de + infinitivo"]]},
+
+{t:"Le gérondif",s:"en + -ant",c:[
+["r","Formação do gerúndio","en + radical de nous + -ant","nous parlons → en parlant"],
+["p","Leio comendo.","Je lis en mangeant.","simultaneidade"],
+["p","Aprendo francês lendo.","J'apprends le français en lisant.","modo/meio"],
+["c","faire → en ___","en faisant",""],
+["c","être / avoir → en ___","en étant / en ayant","irregulares"],
+["c","savoir → en ___","en sachant",""],
+["t","En sortant, ferme la porte.","Ao sair, feche a porta.",""]]},
+
+{t:"Les prépositions et les verbes",s:"commencer à, finir de…",c:[
+["p","Começo a trabalhar às 8h.","Je commence à travailler à 8 heures.","commencer à"],
+["p","Termino de comer.","Je finis de manger.","finir de"],
+["p","Tento entender.","J'essaie de comprendre.","essayer de"],
+["p","Aprendo a dirigir.","J'apprends à conduire.","apprendre à"],
+["p","Sonho em viajar.","Je rêve de voyager.","rêver de"],
+["p","Decidi partir.","J'ai décidé de partir.","décider de"],
+["p","Eu o ajudo a se mudar.","Je l'aide à déménager.","aider qqn à"],
+["p","Peço a Paul que venha.","Je demande à Paul de venir.","demander à qqn de"],
+["r","Verbos sem preposição antes do infinitivo","aimer, vouloir, pouvoir, devoir, savoir, aller, préférer","j'aime danser"]]},
+
+{t:"Les verbes de déplacement",s:"aller, venir, partir, arriver…",c:[
+["p","Vou à Itália para ver amigos.","Je vais en Italie pour voir des amis.",""],
+["p","Ela vem de Lyon.","Elle vient de Lyon.",""],
+["p","Parto para Londres amanhã.","Je pars pour Londres demain. / Je pars à Londres.",""],
+["p","Chego em casa às 19h.","J'arrive chez moi à 19 heures.",""],
+["p","Volto para o Brasil.","Je rentre au Brésil.","rentrer = voltar para casa/país"],
+["t","Il revient de Tokyo.","Ele está voltando de Tóquio.",""],
+["t","Je sors du bureau.","Estou saindo do escritório.",""]]},
+
+{t:"Le futur proche",s:"aller + infinitivo",c:[
+["p","Vou jantar fora.","Je vais dîner dehors.","aller (presente) + infinitivo"],
+["p","Vai chover.","Il va pleuvoir.",""],
+["p","Vamos viajar.","Nous allons voyager.",""],
+["p","Não vou sair.","Je ne vais pas sortir.","negação em volta de aller"],
+["p","Vou me deitar cedo.","Je vais me coucher tôt.","pronome antes do infinitivo"],
+["p","Vou ligar para ele.","Je vais lui téléphoner.",""],
+["t","Vous allez déménager ?","Vocês vão se mudar?",""]]},
+
+{t:"Le passé composé",s:"avoir/être + particípio",c:[
+["r","Formação","avoir ou être (presente) + particípio passado","j'ai mangé, je suis allée"],
+["r","Particípios -er / -ir","-é (parlé) / -i (fini, dormi)",""],
+["c","prendre → j'ai ___","j'ai pris","como mis (mettre), appris, compris"],
+["c","faire → j'ai ___","j'ai fait",""],
+["c","voir → j'ai ___","j'ai vu","como bu (boire), lu (lire), eu (avoir), su, pu, voulu"],
+["c","être → j'ai ___","j'ai été",""],
+["c","écrire / dire → j'ai ___","j'ai écrit / j'ai dit",""],
+["r","Verbos com être (casa de Mrs. Vandertramp)","aller, venir, arriver, partir, entrer, sortir, monter, descendre, naître, mourir, rester, tomber, retourner, devenir, revenir, rentrer","+ todos os pronominais"],
+["p","Ela foi ao cinema.","Elle est allée au cinéma.","com être, particípio concorda com o sujeito"],
+["p","Nós chegamos tarde (nós = 2 mulheres).","Nous sommes arrivées tard.",""],
+["p","Ela se levantou cedo.","Elle s'est levée tôt.",""],
+["p","Não comi.","Je n'ai pas mangé.","negação em volta do auxiliar"],
+["p","Nunca fui lá.","Je n'y suis jamais allée.",""],
+["t","Les fleurs ? Je les ai mises dans un vase.","As flores? Coloquei-as num vaso.","avoir: concorda com o COD se ele vem antes"]]},
+
+{t:"Le temps (3)",s:"il y a, pendant, depuis, dans",c:[
+["p","Cheguei há dois anos.","Je suis arrivée il y a deux ans.","il y a + passado = há (atrás)"],
+["p","Morei lá durante três anos.","J'ai habité là-bas pendant trois ans.","pendant = duração acabada"],
+["p","Parto daqui a uma semana.","Je pars dans une semaine.","dans = no futuro"],
+["p","ontem / anteontem","hier / avant-hier",""],
+["p","amanhã / depois de amanhã","demain / après-demain",""],
+["p","na véspera / no dia seguinte","la veille / le lendemain","em relação a outro momento"],
+["p","Antes de partir, liguei para ela.","Avant de partir, je l'ai appelée.","avant de + infinitivo"],
+["p","Depois de comer, saí.","Après avoir mangé, je suis sortie.","après + infinitivo passado"]]},
+
+{t:"Le passif",s:"être + particípio",c:[
+["r","Formação","être (no tempo do verbo) + particípio + par","le gâteau est fait par Léa"],
+["p","A carta foi escrita por ele.","La lettre a été écrite par lui.","passado composto do passivo: a été"],
+["p","O museu é visitado por turistas.","Le musée est visité par des touristes.",""],
+["t","La réunion sera annulée.","A reunião será cancelada.",""],
+["t","Il est aimé de tous.","Ele é amado por todos.","sentimentos: de em vez de par"]]},
+
+{t:"L'imparfait",s:"Hábitos e descrições no passado",c:[
+["r","Formação","radical de nous (presente) + -ais, -ais, -ait, -ions, -iez, -aient","nous parlons → je parlais"],
+["c","être → j'___","j'étais","único irregular"],
+["c","avoir → j'___","j'avais",""],
+["c","faire → je ___","je faisais",""],
+["p","Quando eu era criança, morava no interior.","Quand j'étais petite, j'habitais à la campagne.","descrição/hábito → imparfait"],
+["p","Fazia frio.","Il faisait froid.",""],
+["p","Eu lia quando ele chegou.","Je lisais quand il est arrivé.","cenário (imparfait) + ação pontual (passé composé)"],
+["r","Imparfait ou passé composé: “Ontem eu ___ (dormir) até 10h.”","j'ai dormi","ação delimitada → passé composé"],
+["t","Avant, je fumais.","Antes, eu fumava.",""],
+["t","Si on allait au cinéma ?","E se a gente fosse ao cinema?","si + imparfait = sugestão"]]},
+
+{t:"Le plus-que-parfait",s:"Passado do passado",c:[
+["r","Formação","avoir/être no imparfait + particípio","j'avais mangé, j'étais partie"],
+["p","Ela já tinha saído quando cheguei.","Elle était déjà partie quand je suis arrivée.",""],
+["p","Vendi o carro que tinha comprado.","J'ai vendu la voiture que j'avais achetée.",""],
+["t","Si j'avais su…","Se eu soubesse… / Se eu tivesse sabido…",""]]},
+
+{t:"Le discours indirect au passé",s:"Concordância dos tempos",c:[
+["r","presente → ?","imparfait","« Je suis là » → Il a dit qu'il était là."],
+["r","passé composé → ?","plus-que-parfait","« J'ai fini » → Il a dit qu'il avait fini."],
+["r","futur → ?","conditionnel","« Je viendrai » → Il a dit qu'il viendrait."],
+["p","Ela disse que estava cansada.","Elle a dit qu'elle était fatiguée.",""],
+["p","Ele perguntou se eu viria.","Il a demandé si je viendrais.",""],
+["r","aujourd'hui / demain no indireto passado","ce jour-là / le lendemain",""]]},
+
+{t:"Venir de, être en train de, être sur le point de",s:"Aspectos da ação",c:[
+["p","Acabei de chegar.","Je viens d'arriver.","passado recente"],
+["p","Estou trabalhando (neste momento).","Je suis en train de travailler.","ação em curso"],
+["p","Estou prestes a sair.","Je suis sur le point de sortir.","futuro imediato"],
+["t","Il vient de partir.","Ele acabou de sair.","≠ il vient de Paris (origem)"],
+["t","On était en train de dîner.","A gente estava jantando.",""]]},
+
+{t:"Le futur simple",s:"Futuro sintético",c:[
+["r","Formação","infinitivo + -ai, -as, -a, -ons, -ez, -ont","je parlerai; -re perde o e: je prendrai"],
+["c","être → je ___","je serai",""],
+["c","avoir → j'___","j'aurai",""],
+["c","aller → j'___","j'irai",""],
+["c","faire → je ___","je ferai",""],
+["c","venir → je ___","je viendrai",""],
+["c","pouvoir / voir → je ___","je pourrai / je verrai",""],
+["c","vouloir / savoir → je ___","je voudrai / je saurai",""],
+["p","Quando você vier, a gente sai.","Quand tu viendras, on sortira.","quand + futuro (português usa subjuntivo)"],
+["r","Futur proche ou simple?","Proche: próximo/certo. Simples: mais distante, promessa, previsão","je vais partir / un jour je partirai"]]},
+
+{t:"Le futur antérieur",s:"Futuro anterior",c:[
+["r","Formação","avoir/être no futuro + particípio","j'aurai fini, je serai partie"],
+["p","Vou me casar quando tiver terminado os estudos.","Je me marierai quand j'aurai terminé mes études.","ação acabada antes de outra futura"],
+["p","Ligue quando tiver chegado.","Appelle quand tu seras arrivé(e).",""],
+["t","Dans un an, j'aurai appris le français.","Daqui a um ano, terei aprendido francês.",""]]},
+
+{t:"Le conditionnel (2)",s:"Imaginário, desejo",c:[
+["r","Formação","radical do futuro + -ais, -ais, -ait, -ions, -iez, -aient","je serais, j'aurais, j'irais, je ferais"],
+["p","Eu seria uma sereia.","Je serais une sirène.","jogo de imaginação"],
+["p","Eu adoraria morar em Paris.","J'adorerais habiter à Paris.",""],
+["p","Seria bom.","Ce serait bien.",""],
+["t","Selon la presse, le ministre serait malade.","Segundo a imprensa, o ministro estaria doente.","informação não confirmada"],
+["r","Condicional passado","avoir/être no condicional + particípio","j'aurais aimé = eu teria gostado"]]},
+
+{t:"Les hypothèses",s:"si + presente/imparfait/plus-que-parfait",c:[
+["r","si + presente →","presente ou futuro","S'il fait beau, on ira à la plage."],
+["r","si + imparfait →","condicional","S'il faisait beau, j'irais à la plage."],
+["r","si + plus-que-parfait →","condicional passado","S'il avait fait beau, je serais allée à la plage."],
+["p","Se eu tivesse dinheiro, viajaria.","Si j'avais de l'argent, je voyagerais.","nunca condicional depois de si"],
+["p","Se chover, fico em casa.","S'il pleut, je reste à la maison.","si + il → s'il"],
+["t","Si j'étais toi, je partirais.","Se eu fosse você, eu iria embora.",""]]},
+
+{t:"Le subjonctif",s:"Il faut que…, vontade, emoção",c:[
+["r","Formação (regra geral)","radical de ils (presente) + -e, -es, -e, -ions, -iez, -ent","ils parlent → que je parle"],
+["c","être → que je ___","que je sois","que tu sois, qu'il soit, que nous soyons…"],
+["c","avoir → que j'___","que j'aie",""],
+["c","aller → que j'___","que j'aille",""],
+["c","faire → que je ___","que je fasse",""],
+["c","pouvoir / savoir → que je ___","que je puisse / que je sache",""],
+["c","vouloir → que je ___","que je veuille",""],
+["p","É preciso que eu parta.","Il faut que je parte.",""],
+["p","Quero que você venha.","Je veux que tu viennes.","vontade → subjuntivo"],
+["p","Estou feliz que você esteja aqui.","Je suis contente que tu sois là.","emoção → subjuntivo"],
+["r","Je pense qu'il ___ (venir).","vient","opinião afirmativa → indicativo"],
+["r","Je ne pense pas qu'il ___ (venir).","vienne","opinião negativa → subjuntivo"],
+["p","embora esteja frio","bien qu'il fasse froid","bien que + subjuntivo"],
+["p","para que você entenda","pour que tu comprennes","pour que + subjuntivo"],
+["p","antes que ele saia","avant qu'il parte","avant que + subjuntivo"]]},
+
+{t:"Les relations logiques",s:"Causa, consequência, oposição",c:[
+["p","porque","parce que","causa: resposta a pourquoi"],
+["p","já que (causa conhecida)","puisque / comme",""],
+["p","graças a / por causa de","grâce à / à cause de","positivo / negativo"],
+["p","então / portanto","donc / alors",""],
+["p","É por isso que…","C'est pour ça que…",""],
+["p","para (finalidade) + verbo","pour + infinitivo","je travaille pour voyager"],
+["p","mas / no entanto","mais / pourtant / cependant",""],
+["p","enquanto (oposição)","alors que / tandis que",""],
+["p","apesar de","malgré","malgré la pluie"],
+["t","Même si tu pars, je reste.","Mesmo que você vá, eu fico.","même si + indicativo"]]}
+];
+
+</script>
+<script>
+{
+const KIND={t:"traduza.fr",p:"diga-em-francês.pt",c:"complete.fr",r:"regra.md"};
+const $=id=>document.getElementById(id);
+const KEY="fiches-fr-v1";
+let st={};
+try{st=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){st={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const all=[];CH.forEach((ch,ci)=>ch.c.forEach((c,i)=>all.push({ci,i,id:ci+"-"+i,k:c[0],f:c[1],b:c[2],n:c[3]||""})));
+const canSpeak=(()=>{try{return "speechSynthesis" in window}catch(e){return false}})();
+
+function renderHome(){
+  let tot=0,ok=0;
+  $("list").innerHTML=CH.map((ch,ci)=>{
+    const n=ch.c.length,k=ch.c.filter((_,i)=>st[ci+"-"+i]===1).length;tot+=n;ok+=k;
+    return `<li><button class="ch${k===n?" full":""}" data-c="${ci}"><span class="n">${ci+1}</span><span><b>${esc(ch.t)}</b><small>${esc(ch.s)}</small><span class="pc"><span class="mini"><i style="width:${Math.round(k/n*100)}%"></i></span>${k}/${n}</span></span></button></li>`}).join("");
+  $("gbar").style.width=(ok/tot*100)+"%";
+  $("sub").textContent=`${CH.length} capítulos do Grammaire Progressive (débutant). ${ok} de ${tot} fichas dominadas.`;
+  $("bWrong").disabled=!all.some(c=>st[c.id]===0);
+}
+
+let q=[],cur=null,title="",chap=null,total=0,okRun=0;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function start(cards,t,ci,mix){
+  q=mix?shuffle(cards.slice()):cards.slice();total=q.length;okRun=0;title=t;chap=ci;
+  $("home").classList.add("hide");$("hero").classList.add("hide");$("study").classList.remove("hide");
+  $("deck").classList.remove("hide");$("done").classList.add("hide");
+  $("sTitle").textContent=t;$("bAgain").textContent=ci==null?"Repetir rodada":"Repetir capítulo";
+  window.scrollTo(0,0);next();
+}
+function next(){
+  if(!q.length){finish();return}
+  cur=q[0];const card=$("card");card.classList.remove("flip");
+  const sp="";$("aRev").href=revLink(frText(cur));
+  $("kF").textContent=KIND[cur.k];$("kB").textContent=KIND[cur.k];
+  $("tF").innerHTML=esc(cur.f)+(cur.k==="t"?sp:"");
+  $("qB").textContent=cur.f;
+  $("tB").innerHTML=esc(cur.b)+(cur.k!=="t"?sp:"");
+  $("nB").textContent=cur.n;
+  $("sCount").textContent=`${total-q.length+1} de ${total}`+(chap==null&&cur?` · cap. ${cur.ci+1}`:"");
+  $("sProg").style.width=((total-q.length)/total*100)+"%";
+}
+function flip(){$("card").classList.toggle("flip")}
+function answer(ok){
+  if(!cur)return;
+  st[cur.id]=ok?1:0;save();
+  q.shift();
+  if(ok)okRun++;else{q.push(cur);total++}
+  next();
+}
+function finish(){
+  $("deck").classList.add("hide");$("done").classList.remove("hide");$("sProg").style.width="100%";
+  const miss=total-okRun;
+  $("dT").textContent=miss?"Rodada concluída!":"Parfait !";
+  $("dP").textContent=miss?`Você acertou todos no fim, mas errou ${miss} vez${miss>1?"es":""} pelo caminho. Elas ficam marcadas em “Revisar as que errei”.`:`Acertou todos os ${okRun} de primeira. Bravo !`;
+  $("sCount").textContent="";cur=null;
+}
+const frText=c=>(c.k==="t"?c.f:c.b).split(" / ")[0].replace(/___/g,"").replace(/\(.*?\)/g,"").replace(/\s+/g," ").trim();
+function revLink(t){const w=t.replace(/[?!.,;:«»—…]/g," ").replace(/\s+/g," ").trim();
+  return w.split(" ").length<=2?"https://dicionario.reverso.net/frances-portugues/"+encodeURIComponent(w.toLowerCase())
+  :"https://context.reverso.net/traducao/frances-portugues/"+encodeURIComponent(w)}
+const VK="fiches-fr-voice";let voices=[],chosen=null;
+try{chosen=localStorage.getItem(VK)}catch(e){}
+const score=v=>(/natural|online|neural/i.test(v.name)?40:0)+(/premium|enhanced|amélie|amelie|thomas|google/i.test(v.name)?20:0)+(/fr-FR/i.test(v.lang)?5:0)+(v.localService?0:3);
+function loadVoices(){
+  if(!canSpeak)return;
+  try{voices=speechSynthesis.getVoices().filter(v=>/^fr/i.test(v.lang)).sort((a,b)=>score(b)-score(a))}catch(e){voices=[]}
+  if(!voices.length)return;
+  $("vSel").innerHTML=voices.map(v=>`<option value="${esc(v.name)}">${esc(v.name.replace(/^Microsoft /,"").replace(/ - French.*$/,""))} (${esc(v.lang)})</option>`).join("");
+  if(chosen&&voices.some(v=>v.name===chosen))$("vSel").value=chosen;
+  $("vWrap").classList.remove("hide");
+}
+function speak(){
+  if(!cur||!canSpeak)return;
+  try{const u=new SpeechSynthesisUtterance(frText(cur));u.lang="fr-FR";u.rate=.9;
+  const v=voices.find(v=>v.name===$("vSel").value)||voices[0];if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
+}
+function goHome(){$("study").classList.add("hide");$("home").classList.remove("hide");$("hero").classList.remove("hide");cur=null;renderHome();try{history.replaceState(null,"","#inicio")}catch(e){}}
+
+$("list").addEventListener("click",e=>{const b=e.target.closest(".ch");if(!b)return;const ci=+b.dataset.c;
+  openChap(ci);try{history.replaceState(null,"","#cap"+(ci+1))}catch(err){}});
+function openChap(ci){start(all.filter(c=>c.ci===ci),`${ci+1}. ${CH[ci].t}`,ci,false)}
+$("card").addEventListener("click",flip);
+$("bSpeak").onclick=speak;if(!canSpeak)$("bSpeak").classList.add("hide");
+$("vSel").onchange=()=>{chosen=$("vSel").value;try{localStorage.setItem(VK,chosen)}catch(e){}speak()};
+$("bYes").onclick=()=>answer(true);$("bNo").onclick=()=>answer(false);
+$("bShuf").onclick=()=>{if(q.length>1){shuffle(q);next()}};
+$("bBack").onclick=goHome;$("bHome").onclick=goHome;
+$("bAgain").onclick=()=>{chap==null?start(all.filter(c=>st[c.id]===0).length?all.filter(c=>st[c.id]===0):all,title,null,true):openChap(chap)};
+$("bMix").onclick=()=>start(shuffle(all.slice()).slice(0,25),"Mistura de todos os capítulos",null,true);
+$("bWrong").onclick=()=>{const w=all.filter(c=>st[c.id]===0);if(w.length)start(w,"Revisar as que errei",null,true)};
+let armed=false;
+$("bReset").onclick=()=>{if(!armed){armed=true;$("bReset").textContent="Toque de novo para confirmar";setTimeout(()=>{armed=false;$("bReset").textContent="Zerar progresso"},3000);return}
+  st={};save();armed=false;$("bReset").textContent="Zerar progresso";renderHome()};
+document.addEventListener("keydown",e=>{if($("study").classList.contains("hide")||!cur)return;
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();flip()}else if(e.key==="ArrowRight")answer(true);else if(e.key==="ArrowLeft")answer(false)});
+let sx=null;
+$("card").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+$("card").addEventListener("touchend",e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;
+  if(Math.abs(dx)>70&&$("card").classList.contains("flip")){e.preventDefault();answer(dx>0)}});
+function route(){const m=/^#cap(\d+)$/.exec(location.hash);if(m&&CH[m[1]-1])openChap(m[1]-1);else if(!$("study").classList.contains("hide"))goHome()}
+window.addEventListener("hashchange",route);
+if(canSpeak){loadVoices();try{speechSynthesis.onvoiceschanged=loadVoices}catch(e){}}
+renderHome();route();
+}
+</script>
+</body>
+</html>
