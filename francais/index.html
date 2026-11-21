@@ -181,6 +181,16 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
 .plinks{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .plinks a{font:600 12px 'JetBrains Mono',monospace;text-decoration:none;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:6px 12px;min-height:32px;display:inline-flex;align-items:center;background:var(--white)}
 .plinks a.sp{background:var(--ink);color:var(--bg)}
+.chips{display:flex;gap:8px;overflow-x:auto;max-width:620px;margin:0 auto 16px;padding:2px 4px 8px}
+.chips button{flex:none;min-height:44px;border-radius:999px;border:2.5px solid var(--line);background:var(--white);padding:6px 14px;font:700 14px 'Space Grotesk',sans-serif;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.chips button small{font:600 10px 'JetBrains Mono',monospace;opacity:.7}
+.chips button[aria-pressed=true]{background:var(--coral);color:var(--onc)}
+.chips button.later{border-style:dashed}
+.ccard{max-width:620px;margin:0 auto;background:var(--white);border:2.5px solid var(--line);border-radius:22px;box-shadow:10px 10px 0 var(--sh);overflow:hidden}
+.cbody{padding:26px 22px 30px;display:grid;gap:14px;background:var(--pink)}
+.cverb b{font:800 clamp(34px,9vw,52px)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;display:block}
+.cverb small{font:500 15px 'JetBrains Mono',monospace;color:var(--mut)}
+.cpers{font:800 clamp(26px,7vw,36px)/1 'Bricolage Grotesque',sans-serif;background:var(--white);border:2.5px solid var(--line);border-radius:16px;padding:10px 16px;justify-self:start;transform:rotate(-1deg)}
 </style>
 <script>try{const t=localStorage.getItem("fiches-fr-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -201,6 +211,7 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
     <article class="today" id="today"></article>
 
     <div class="acts">
+      <button class="btn" id="bConj">treino de conjugação</button>
       <button class="btn" id="bGen">treino de gênero: un ou une?</button>
       <button class="btn" id="bWrong">revisar as que errei</button>
       <button class="btn" id="bMix">misturar tudo</button>
@@ -269,6 +280,32 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
     </div>
     <div class="phases" id="phases"></div>
     <ol class="tl" id="tl"></ol>
+  </section>
+
+  <section id="conj" class="hide">
+    <div class="sHead">
+      <button class="back" id="cBack" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="t"><b>conjugação</b><small id="cCount"></small></div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Tempos verbais"></div>
+    <div class="prog"><i id="cProg"></i></div>
+    <div id="cPlay">
+      <div class="ccard">
+        <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="kind" id="cTense"></span></div>
+        <div class="cbody"><div class="cverb"><b id="cVerb"></b><small id="cPt"></small></div><div class="cpers" id="cPers"></div></div>
+      </div>
+      <div class="wr">
+        <div class="acc" id="cAcc"></div>
+        <form class="inrow" id="cForm"><input id="cIn" lang="fr" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="conjugue aqui…" aria-label="Sua resposta"><button class="btn pri">corrigir</button></form>
+        <div class="fb hide" id="cFb"></div>
+        <button class="btn pri reveal hide" id="cNext" type="button">próxima →</button>
+      </div>
+      <p class="hint">Pode escrever com ou sem o pronome: “avons pris” ou “nous avons pris”. Enter corrige e passa para a próxima.</p>
+    </div>
+    <div class="done hide" id="cDone">
+      <h2 id="cT"></h2><p id="cP"></p>
+      <div class="acts"><button class="btn pri" id="cAgain">mais 20</button><button class="btn" id="cHome">voltar ao início</button></div>
+    </div>
   </section>
 
   <section id="gen" class="hide">
@@ -1079,6 +1116,65 @@ const GEN = [
 ["genre","m","gênero",""]
 ];
 
+// verbos: [infinitivo, tradução, presente (6 formas) | null se -er regular, particípio, auxiliar être?, radical do futuro | null]
+const VERBS=[
+["être","ser / estar","suis es est sommes êtes sont","été",0,"ser"],
+["avoir","ter","ai as a avons avez ont","eu",0,"aur"],
+["aller","ir","vais vas va allons allez vont","allé",1,"ir"],
+["faire","fazer","fais fais fait faisons faites font","fait",0,"fer"],
+["venir","vir","viens viens vient venons venez viennent","venu",1,"viendr"],
+["pouvoir","poder","peux peux peut pouvons pouvez peuvent","pu",0,"pourr"],
+["vouloir","querer","veux veux veut voulons voulez veulent","voulu",0,"voudr"],
+["devoir","dever","dois dois doit devons devez doivent","dû",0,"devr"],
+["savoir","saber","sais sais sait savons savez savent","su",0,"saur"],
+["prendre","pegar / tomar","prends prends prend prenons prenez prennent","pris",0,null],
+["mettre","colocar","mets mets met mettons mettez mettent","mis",0,null],
+["dire","dizer","dis dis dit disons dites disent","dit",0,null],
+["voir","ver","vois vois voit voyons voyez voient","vu",0,"verr"],
+["partir","partir / ir embora","pars pars part partons partez partent","parti",1,null],
+["sortir","sair","sors sors sort sortons sortez sortent","sorti",1,null],
+["dormir","dormir","dors dors dort dormons dormez dorment","dormi",0,null],
+["finir","terminar","finis finis finit finissons finissez finissent","fini",0,null],
+["choisir","escolher","choisis choisis choisit choisissons choisissez choisissent","choisi",0,null],
+["parler","falar",null,"parlé",0,null],
+["aimer","amar / gostar",null,"aimé",0,null],
+["habiter","morar",null,"habité",0,null],
+["travailler","trabalhar",null,"travaillé",0,null],
+["regarder","olhar / assistir",null,"regardé",0,null],
+["arriver","chegar",null,"arrivé",1,null],
+["rester","ficar",null,"resté",1,null],
+["tomber","cair",null,"tombé",1,null],
+["entrer","entrar",null,"entré",1,null],
+["manger","comer","mange manges mange mangeons mangez mangent","mangé",0,null],
+["commencer","começar","commence commences commence commençons commencez commencent","commencé",0,null],
+["acheter","comprar","achète achètes achète achetons achetez achètent","acheté",0,"achèter"],
+["appeler","chamar / ligar","appelle appelles appelle appelons appelez appellent","appelé",0,"appeller"],
+["préférer","preferir","préfère préfères préfère préférons préférez préfèrent","préféré",0,null],
+["payer","pagar","paie paies paie payons payez paient","payé",0,"paier"],
+["lire","ler","lis lis lit lisons lisez lisent","lu",0,null],
+["écrire","escrever","écris écris écrit écrivons écrivez écrivent","écrit",0,null],
+["boire","beber","bois bois boit buvons buvez boivent","bu",0,null],
+["connaître","conhecer","connais connais connaît connaissons connaissez connaissent","connu",0,null],
+["croire","acreditar","crois crois croit croyons croyez croient","cru",0,null],
+["recevoir","receber","reçois reçois reçoit recevons recevez reçoivent","reçu",0,"recevr"],
+["ouvrir","abrir","ouvre ouvres ouvre ouvrons ouvrez ouvrent","ouvert",0,null],
+["attendre","esperar","attends attends attend attendons attendez attendent","attendu",0,null],
+["vendre","vender","vends vends vend vendons vendez vendent","vendu",0,null],
+["répondre","responder","réponds réponds répond répondons répondez répondent","répondu",0,null],
+["vivre","viver","vis vis vit vivons vivez vivent","vécu",0,null],
+["courir","correr","cours cours court courons courez courent","couru",0,"courr"],
+["devenir","tornar-se","deviens deviens devient devenons devenez deviennent","devenu",1,"deviendr"],
+["naître","nascer","nais nais naît naissons naissez naissent","né",1,null],
+["mourir","morrer","meurs meurs meurt mourons mourez meurent","mort",1,"mourr"],
+["se lever","levantar-se","lève lèves lève levons levez lèvent","levé",1,"lèver"],
+["s'appeler","chamar-se","appelle appelles appelle appelons appelez appellent","appelé",1,"appeller"],
+["se coucher","deitar-se",null,"couché",1,null],
+["se promener","passear","promène promènes promène promenons promenez promènent","promené",1,"promèner"]
+];
+const SUBJ_IRR={"être":"sois sois soit soyons soyez soient","avoir":"aie aies ait ayons ayez aient","aller":"aille ailles aille allions alliez aillent","faire":"fasse fasses fasse fassions fassiez fassent","pouvoir":"puisse puisses puisse puissions puissiez puissent","savoir":"sache saches sache sachions sachiez sachent","vouloir":"veuille veuilles veuille voulions vouliez veuillent"};
+// tempo: [id, nome, capítulo (índice 0) em que é estudado]
+const TENSES=[["pres","présent",15],["fp","futur proche",38],["pc","passé composé",39],["imp","imparfait",42],["fut","futur simple",46],["cond","conditionnel",48],["subj","subjonctif",50]];
+
 </script>
 <script>
 {
@@ -1194,7 +1290,7 @@ function renderPlan(){
     h+=`<li class="${st}" ${x.d===t?'id="tlNow"':""}><div class="d mono">${fmt(x.d)}<span>dia ${x.n}</span></div><div class="c">
       ${ch?`<b>cap. ${x.ci+1} · ${esc(ch.t)}</b><small>${esc(ch.s)}${BILAN[x.ci]?` · <strong>+ ${BILAN[x.ci]}</strong>`:""}</small>`:`<b>revisão</b><small>Faça as revisões do dia e 1 rodada de un/une.</small>`}
       ${x.pods.map(p=>`<div class="pod"><span class="mono">ouvir</span><b>${p.t}</b><small>${p.s}</small><span class="plinks"><a class="sp" href="https://open.spotify.com/search/${encodeURIComponent(p.q)}/episodes" target="_blank" rel="noopener">spotify ↗</a><a href="${p.u}" target="_blank" rel="noopener">site ↗</a></span></div>`).join("")}
-      <div class="tacts">${ch?`<button class="btn sm" data-go="flip" data-c="${x.ci}">fichas</button><button class="btn sm" data-go="write" data-c="${x.ci}">escrever</button>`:`<button class="btn sm" data-go="due">revisões</button>`}<button class="btn sm" data-go="gen">un/une</button>${st==="ok"?'<span class="okk mono">feito</span>':st==="now"?'<span class="okk mono now">hoje</span>':st==="late"?'<span class="okk mono late">atrasado</span>':""}</div>
+      <div class="tacts">${ch?`<button class="btn sm" data-go="flip" data-c="${x.ci}">fichas</button><button class="btn sm" data-go="write" data-c="${x.ci}">escrever</button>`:`<button class="btn sm" data-go="due">revisões</button>`}${ch&&TENSES.find(z=>z[2]===x.ci)?`<button class="btn sm" data-go="conj" data-t="${TENSES.find(z=>z[2]===x.ci)[0]}">conjugação</button>`:""}<button class="btn sm" data-go="gen">un/une</button>${st==="ok"?'<span class="okk mono">feito</span>':st==="now"?'<span class="okk mono now">hoje</span>':st==="late"?'<span class="okk mono late">atrasado</span>':""}</div>
     </div></li>`});
   $("tl").innerHTML=h;
 }
@@ -1211,7 +1307,7 @@ const W=()=>mode==="write";
 const wcard=()=>W()&&cur&&cur.k!=="r";
 let q=[],cur=null,title="",total=0,doneN=0,lastQ=[],graded=null,flipped=false;
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-function show(id){["home","study","gen","plan"].forEach(s=>$(s).classList.toggle("hide",s!==id));$("hero").classList.toggle("hide",id!=="home");window.scrollTo(0,0)}
+function show(id){["home","study","gen","plan","conj"].forEach(s=>$(s).classList.toggle("hide",s!==id));$("hero").classList.toggle("hide",id!=="home");window.scrollTo(0,0)}
 function startSession(cards,t){
   if(!cards.length){renderHome();return}
   q=cards.slice();lastQ=cards.slice();total=q.length;doneN=0;title=t;
@@ -1341,6 +1437,67 @@ function genAns(a){
   $("gBtns").classList.add("hide");$("gNext").classList.remove("hide");$("gNext").focus();say(art+" "+n[0]);
 }
 
+/* ---------- conjugação ---------- */
+const PR=["je","tu","il","elle","nous","vous","ils","elles"],PI=[0,1,2,2,3,4,5,5],RF=["me","te","se","se","nous","vous","se","se"];
+const VOW=/^[aeiouyhâàéèêëîïôûœ]/i;
+const vInf=v=>v[0].replace(/^se |^s'/,""),vRefl=v=>/^se |^s'/.test(v[0]);
+function vPres(v){if(v[2])return v[2].split(" ");const st=vInf(v).slice(0,-2);return ["e","es","e","ons","ez","ent"].map(e=>st+e)}
+function vImpStem(v){return vInf(v)==="être"?"ét":vPres(v)[3].replace(/ons$/,"")}
+function vImp(v,i){let st=vImpStem(v);const e=["ais","ais","ait","ions","iez","aient"][i];if(e[0]==="i"){if(st.endsWith("ge"))st=st.slice(0,-1);if(st.endsWith("ç"))st=st.slice(0,-1)+"c"}return st+e}
+function vFutStem(v){if(v[5])return v[5];const f=vInf(v);return f.endsWith("re")?f.slice(0,-1):f}
+function vSubj(v,i){const irr=SUBJ_IRR[vInf(v)];if(irr)return irr.split(" ")[i];if(i===3||i===4)return vImp(v,i);return vPres(v)[5].replace(/ent$/,"")+["e","es","e","","","ent"][i]}
+function joinEl(ws){let out="";ws.forEach((w,k)=>{if(k===0){out=w;return}const prev=ws[k-1];
+  if(["je","me","te","se","que"].includes(prev)&&VOW.test(w)&&!(prev==="que"&&!/^(il|elle|ils|elles|on)$/.test(w))){out=out.slice(0,-prev.length)+prev.slice(0,-1)+"'"+w}else out+=" "+w});return out}
+function partVars(p,pi,etre){if(!etre)return [p];const m=p,f=p+"e",mp=p.endsWith("s")?p:p+"s",fp=p+"es";
+  return pi<=1?[m,f]:pi===2?[m]:pi===3?[f]:pi===4?[mp,fp]:pi===5?[mp,fp,m,f]:pi===6?[mp]:[fp]}
+function conj(v,t,pi){
+  const i=PI[pi],sub=PR[pi],refl=vRefl(v)?[RF[pi]]:[],inf=vInf(v);let forms=[];
+  if(t==="pres")forms=[[...refl,vPres(v)[i]]];
+  else if(t==="imp")forms=[[...refl,vImp(v,i)]];
+  else if(t==="fut")forms=[[...refl,vFutStem(v)+["ai","as","a","ons","ez","ont"][i]]];
+  else if(t==="cond")forms=[[...refl,vFutStem(v)+["ais","ais","ait","ions","iez","aient"][i]]];
+  else if(t==="subj")forms=[[...refl,vSubj(v,i)]];
+  else if(t==="fp")forms=[[["vais","vas","va","allons","allez","vont"][i],...refl,inf]];
+  else if(t==="pc"){const etre=!!v[4],aux=etre?["suis","es","est","sommes","êtes","sont"][i]:["ai","as","a","avons","avez","ont"][i];
+    forms=partVars(v[3],pi,etre).map(p=>[...refl,aux,p])}
+  const out=[];forms.forEach(f=>{
+    const full=t==="subj"?joinEl(["que",sub,...f]):joinEl([sub,...f]);
+    const noSub=joinEl(f);out.push(full,noSub);if(t==="subj")out.push(joinEl([sub,...f]))});
+  return [...new Set(out.map(norm))];
+}
+const CK="fiches-fr-conj",CT="fiches-fr-conj-t";let cm=ls.get(CK,{}),ctz=ls.get(CT,["pres"]);
+let cq=[],cix=0,cok=0,cdone=false,cur2=null;
+function renderChips(){
+  const tC=todayInfo();const reached=ci=>PLAN[ci]&&PLAN[ci].d<=today();
+  $("chips").innerHTML=TENSES.map(([id,n,ci])=>`<button type="button" aria-pressed="${ctz.includes(id)}" data-t="${id}" class="${reached(ci)||chDone(ci)?"":"later"}">${n}<small>cap. ${ci+1}</small></button>`).join("");
+}
+function conjStart(only){
+  if(only)ctz=[only];if(!ctz.length)ctz=["pres"];ls.set(CT,ctz);renderChips();
+  const pool=[];VERBS.forEach(v=>ctz.forEach(t=>pool.push({v,t,w:1+3*(cm[v[0]+"|"+t]||0)})));
+  cq=[];for(let k=0;k<20;k++){let r=Math.random()*pool.reduce((a,b)=>a+b.w,0),j=0;while((r-=pool[j].w)>0)j++;cq.push({v:pool[j].v,t:pool[j].t,pi:Math.floor(Math.random()*8)})}
+  cix=0;cok=0;show("conj");$("cPlay").classList.remove("hide");$("cDone").classList.add("hide");conjNext();
+}
+function conjNext(){
+  if(cix>=cq.length){$("cPlay").classList.add("hide");$("cDone").classList.remove("hide");$("cProg").style.width="100%";
+    $("cT").textContent=cok>=18?"excellent !":cok>=14?"très bien !":"continue !";$("cP").textContent=`${cok} de ${cq.length} certas. Os verbos e tempos em que você erra aparecem mais nas próximas rodadas.`;return}
+  cur2=cq[cix];cdone=false;const tn=TENSES.find(x=>x[0]===cur2.t)[1];
+  $("cTense").textContent=tn;$("cVerb").textContent=cur2.v[0];$("cPt").textContent=cur2.v[1];$("cPers").textContent=(cur2.t==="subj"?"que ":"")+PR[cur2.pi]+" …";
+  $("cFb").classList.add("hide");$("cForm").classList.remove("hide");$("cAcc").classList.remove("hide");$("cNext").classList.add("hide");$("cIn").value="";
+  $("cCount").textContent=`${cix+1} de ${cq.length}`;$("cProg").style.width=(cix/cq.length*100)+"%";
+  if(matchMedia("(hover:hover)").matches)setTimeout(()=>$("cIn").focus(),50);
+}
+function conjCheck(){
+  if(!cur2||cdone)return;const v=$("cIn").value.trim();if(!v){$("cIn").focus();return}
+  cdone=true;const cs=conj(cur2.v,cur2.t,cur2.pi),u=norm(v),k=cur2.v[0]+"|"+cur2.t;
+  let r=cs.includes(u)?"ok":cs.some(x=>strip(x)===strip(u))?"acc":"no";
+  const best=cs[0];
+  if(r==="ok"){cok++;if(cm[k])cm[k]=Math.max(0,cm[k]-1)}else cm[k]=(cm[k]||0)+1;ls.set(CK,cm);
+  const fb=$("cFb");fb.classList.remove("hide","ok");$("cForm").classList.add("hide");$("cAcc").classList.add("hide");
+  if(r==="ok"){fb.classList.add("ok");fb.innerHTML=`<b>Parfait !</b><div class="ln">${esc(best)}</div>`}
+  else{const d=diffHtml(v,best);fb.innerHTML=`<b>${r==="acc"?"Quase: confira os acentos":"Ainda não"}</b><div class="lab">você escreveu</div><div class="ln">${d.ub}</div><div class="lab">resposta</div><div class="ln">${d.bb}</div>`}
+  $("cNext").classList.remove("hide");$("cNext").focus();say(best);
+}
+
 /* ---------- sincronizar ---------- */
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
@@ -1373,10 +1530,21 @@ $("bBack").onclick=goHome;$("bHome").onclick=goHome;$("gBack").onclick=goHome;$(
 $("bMix").onclick=()=>startSession(shuffle(all.filter(c=>seen(c.id))).slice(0,25).concat(),"mistura do que você já viu");
 $("bWrong").onclick=()=>startSession(shuffle(all.filter(c=>S[c.id]&&S[c.id].last===0)),"as que você errou");
 $("bGen").onclick=genStart;
+$("bConj").onclick=()=>conjStart();$("cAgain").onclick=()=>conjStart();
+$("cBack").onclick=()=>goHome();$("cHome").onclick=()=>goHome();
+$("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=b.dataset.t;
+  ctz=ctz.includes(t)?ctz.filter(x=>x!==t):[...ctz,t];if(!ctz.length)ctz=[t];ls.set(CT,ctz);conjStart()});
+$("cAcc").innerHTML=ACC.map(a=>`<button type="button" tabindex="-1">${a}</button>`).join("");
+$("cAcc").addEventListener("mousedown",e=>e.preventDefault());
+$("cAcc").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=$("cIn"),p=i.selectionStart??i.value.length,p2=i.selectionEnd??p;
+  i.value=i.value.slice(0,p)+b.textContent+i.value.slice(p2);i.focus();i.setSelectionRange(p+1,p+1)});
+$("cForm").addEventListener("submit",e=>{e.preventDefault();conjCheck()});
+$("cNext").onclick=()=>{cix++;conjNext()};
 $("bPlan").onclick=()=>{renderPlan();show("plan");try{history.replaceState(null,"","#plano")}catch(e){}const n=$("tlNow");if(n)n.scrollIntoView({block:"center"})};
 $("pBack").onclick=goHome;
 $("tl").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;const g=b.dataset.go;
   if(g==="gen")return genStart();
+  if(g==="conj")return conjStart(b.dataset.t);
   if(g==="due"){const d=all.filter(c=>isDue(c.id));return d.length?startSession(shuffle(d),"revisões de hoje"):(b.textContent="nada para revisar hoje")}
   mode=g;ls.set(MK,mode);const ci=+b.dataset.c;startSession(all.filter(c=>c.ci===ci),`${ci+1}. ${CH[ci].t}`)});$("gAgain").onclick=genStart;
 $("gBtns").addEventListener("click",e=>{const b=e.target.closest("button");if(b)genAns(b.dataset.a)});
@@ -1384,6 +1552,7 @@ $("gNext").onclick=()=>{gi++;genNext()};
 $("bSpeak").onclick=()=>cur&&say(frText(cur));if(!canSpeak)$("bSpeak").classList.add("hide");
 $("vSel").onchange=()=>{chosen=$("vSel").value;ls.set(VK,chosen);cur&&say(frText(cur))};
 document.addEventListener("keydown",e=>{
+  if(!$("conj").classList.contains("hide")){if(cdone&&e.key==="Enter"&&e.target.tagName!=="BUTTON"&&e.target.tagName!=="INPUT"){e.preventDefault();cix++;conjNext()}return}
   if(!$("gen").classList.contains("hide")){if(!gans){if(e.key==="ArrowLeft")genAns("m");else if(e.key==="ArrowRight")genAns("f")}else if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){gi++;genNext()}return}
   if($("study").classList.contains("hide")||!cur||e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;
   if(!flipped){if(!wcard()&&(e.key===" "||e.key==="Enter")){e.preventDefault();reveal(null)}return}
