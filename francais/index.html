@@ -87,6 +87,28 @@ display:flex;flex-direction:column;text-align:left;overflow:hidden}
 .tool svg{flex:none}
 .voice{flex:1 1 180px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
 .voice select{flex:1;min-height:44px;font:500 15px 'Space Grotesk',sans-serif;border:2.5px solid var(--line);border-radius:14px;background:var(--white);color:var(--ink);padding:6px 10px}
+.seg{display:flex;max-width:620px;margin:0 auto 16px;border:2.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--white);box-shadow:4px 4px 0 var(--sh)}
+.seg button{flex:1;min-height:44px;border:0;background:none;font:600 14px 'JetBrains Mono',monospace}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.wr{max-width:620px;margin:22px auto 0;display:grid;gap:12px}
+.acc{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.write .card{min-height:min(32vh,240px)}
+.write .txt{font-size:clamp(24px,6vw,34px)}
+.acc button{flex:none;min-width:40px;min-height:40px;border-radius:10px;border:2px solid var(--line);background:var(--white);font:600 17px 'Space Grotesk',sans-serif}
+.inrow{display:flex;gap:12px}
+.inrow input{flex:1;min-height:56px;font:500 19px 'Space Grotesk',sans-serif;border:2.5px solid var(--line);border-radius:16px;background:var(--white);color:var(--ink);padding:10px 16px;box-shadow:4px 4px 0 var(--sh)}
+.inrow input:focus{outline:3px solid var(--coral);outline-offset:2px}
+.fb{border:2.5px solid var(--line);border-radius:18px;padding:14px 16px;background:var(--white);box-shadow:5px 5px 0 var(--sh)}
+.fb b{display:block;font:800 22px/1.1 'Bricolage Grotesque',sans-serif;margin-bottom:6px}
+.fb.ok{background:var(--coral);color:var(--onc)}
+.fb .lab{font:600 12px 'JetBrains Mono',monospace;margin-top:8px}
+.fb .ln{font-size:18px;overflow-wrap:anywhere}
+.bad{text-decoration:line-through;text-decoration-thickness:2px;color:var(--coral);font-weight:700}
+.fb.ok .bad{color:inherit}
+.miss{background:var(--pink);border-bottom:2.5px solid var(--coral);font-weight:700;padding:0 2px}
+.accm{border-bottom:2.5px dashed var(--coral);font-weight:700}
+.wact{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wact.single{grid-template-columns:1fr}
 .ans{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:620px;margin:22px auto 0}
 .ans .btn{min-height:58px;font-size:18px}
 .yes{background:var(--coral)!important}
@@ -129,6 +151,7 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
       <div class="t"><b id="sTitle"></b><small id="sCount"></small></div>
       <button class="btn" id="bShuf">Embaralhar</button>
     </div>
+    <div class="seg" role="group" aria-label="Modo de estudo"><button id="mFlip" aria-pressed="true">virar a ficha</button><button id="mWrite" aria-pressed="false">escrever a resposta</button></div>
     <div class="prog"><i id="sProg"></i></div>
     <div id="deck">
       <div class="scene">
@@ -142,11 +165,17 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
         <a class="tool" id="aRev" href="https://dicionario.reverso.net/frances-portugues/" target="_blank" rel="noopener">reverso<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></a>
         <label class="voice hide" id="vWrap">voz <select id="vSel" aria-label="Voz em francês"></select></label>
       </div>
-      <div class="ans">
+      <div class="wr hide" id="wr">
+        <div class="acc" id="acc"></div>
+        <form class="inrow" id="wForm"><input id="wIn" lang="fr" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="em francês…" aria-label="Sua resposta"><button class="btn pri" id="wGo">corrigir</button></form>
+        <div class="fb hide" id="fb"></div>
+        <div class="wact hide" id="wAct"><button class="btn" id="wOver" type="button">contar como certa</button><button class="btn pri" id="wNext" type="button">próxima →</button></div>
+      </div>
+      <div class="ans" id="ansFlip">
         <button class="btn" id="bNo">Errei</button>
         <button class="btn yes" id="bYes">Acertei</button>
       </div>
-      <p class="hint">As que você errar voltam no fim da rodada.</p>
+      <p class="hint" id="hint">As que você errar voltam no fim da rodada.</p>
     </div>
     <div class="done hide" id="done">
       <h2 id="dT"></h2>
@@ -761,10 +790,51 @@ function renderHome(){
   $("bWrong").disabled=!all.some(c=>st[c.id]===0);
 }
 
-let q=[],cur=null,title="",chap=null,total=0,okRun=0;
+let q=[],cur=null,title="",chap=null,total=0,okRun=0,lastCards=[],lastMix=false;
+const MK="fiches-fr-mode";let mode="flip";try{mode=localStorage.getItem(MK)||"flip"}catch(e){}
+const W=()=>mode==="write";
+const ACC="é è ê à â ç ù û ô î ï ë œ É À Ç".split(" ");
+const strip=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function norm(x){return x.toLowerCase().replace(/[’`´]/g,"'").replace(/[«»]/g," ").replace(/\s*([?!.,;:])\s*/g,"$1 ").replace(/[.!?;:,]+\s*$/,"").replace(/\s+/g," ").trim()}
+function cands(c){
+  const exp=c.k==="t"?c.f:c.b,set=new Set();
+  const add=x=>{x=norm(x);if(x)set.add(x)};
+  add(exp);add(exp.replace(/\(.*?\)/g,""));if(exp.includes(" — "))exp.split(" — ").slice(1).forEach(p=>{add(p);p.split(" / ").forEach(add)});
+  exp.split(" / ").forEach(p=>{add(p);add(p.replace(/\(.*?\)/g,""));(p.match(/\(([^)]*)\)/g)||[]).forEach(m=>add(m.slice(1,-1).replace(/^ou /,"")))});
+  if(c.k==="c"&&c.f.includes("___")){
+    let f=c.f.includes("→")?c.f.split("→").pop():c.f;f=f.replace(/\(.*?\)/g,"");
+    const [pre,suf]=f.split("___").map(norm);
+    [...set].forEach(e=>{if(e.startsWith(pre)&&e.endsWith(suf)&&e.length>pre.length+suf.length)add(e.slice(pre.length,e.length-suf.length))});
+  }
+  return [...set];
+}
+function lcs(a,b,eq){const m=a.length,n=b.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)d[i][j]=eq(a[i],b[j])?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
+  const ia=new Set(),ib=new Set();let i=0,j=0;while(i<m&&j<n){if(eq(a[i],b[j])){ia.add(i);ib.add(j);i++;j++}else if(d[i+1][j]>=d[i][j+1])i++;else j++}
+  return {ia,ib,len:d[0][0]}}
+function grade(c,input){
+  const u=norm(input),cs=cands(c);
+  if(cs.includes(u))return {r:"ok"};
+  if(cs.some(x=>strip(x)===strip(u)))return {r:"acc",best:cs.find(x=>strip(x)===strip(u))};
+  const ut=u.split(" ");let best=cs[0],bl=-1;
+  cs.forEach(x=>{const l=lcs(ut,x.split(" "),(p,q)=>strip(p)===strip(q)).len-Math.abs(x.split(" ").length-ut.length)*.1;if(l>bl){bl=l;best=x}});
+  return {r:"no",best};
+}
+function diffHtml(u,best){
+  const ut=norm(u).split(" "),bt=best.split(" ");
+  const {ia,ib}=lcs(ut,bt,(p,q)=>strip(p)===strip(q));
+  const mark=(t,i,set,other,cls)=>set.has(i)?(t===other?esc(t):`<span class="accm">${esc(t)}</span>`):`<span class="${cls}">${esc(t)}</span>`;
+  let k=0;const pairs={};[...ia].forEach((i,x)=>pairs[i]=[...ib][x]);
+  const ub=ut.map((t,i)=>ia.has(i)?(t===bt[pairs[i]]?esc(t):`<span class="accm">${esc(t)}</span>`):`<span class="bad">${esc(t)}</span>`).join(" ");
+  const rev={};Object.entries(pairs).forEach(([i,j])=>rev[j]=+i);
+  const bb=bt.map((t,j)=>ib.has(j)?(t===ut[rev[j]]?esc(t):`<span class="accm">${esc(t)}</span>`):`<span class="miss">${esc(t)}</span>`).join(" ");
+  return {ub,bb};
+}
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
 function start(cards,t,ci,mix){
+  lastCards=cards;lastMix=mix;
+  if(W()){const f=cards.filter(c=>c.k!=="r");if(f.length)cards=f}
   q=mix?shuffle(cards.slice()):cards.slice();total=q.length;okRun=0;title=t;chap=ci;
   $("home").classList.add("hide");$("hero").classList.add("hide");$("study").classList.remove("hide");
   $("deck").classList.remove("hide");$("done").classList.add("hide");
@@ -776,14 +846,37 @@ function next(){
   cur=q[0];const card=$("card");card.classList.remove("flip");
   const sp="";$("aRev").href=revLink(frText(cur));
   $("kF").textContent=KIND[cur.k];$("kB").textContent=KIND[cur.k];
-  $("tF").innerHTML=esc(cur.f)+(cur.k==="t"?sp:"");
-  $("qB").textContent=cur.f;
-  $("tB").innerHTML=esc(cur.b)+(cur.k!=="t"?sp:"");
+  const prompt=W()&&cur.k==="t"?cur.b:cur.f;
+  if(W()&&cur.k==="t"){$("kF").textContent="escreva-em-francês.pt";$("kB").textContent="escreva-em-francês.pt"}
+  $("tF").innerHTML=esc(prompt);
+  $("qB").textContent=prompt;
+  $("tB").innerHTML=esc(W()&&cur.k==="t"?cur.f:cur.b);
+  setMode();
   $("nB").textContent=cur.n;
   $("sCount").textContent=`${total-q.length+1} de ${total}`+(chap==null&&cur?` · cap. ${cur.ci+1}`:"");
   $("sProg").style.width=((total-q.length)/total*100)+"%";
 }
 function flip(){$("card").classList.toggle("flip")}
+let graded=null;
+function setMode(){
+  $("mFlip").setAttribute("aria-pressed",String(!W()));$("mWrite").setAttribute("aria-pressed",String(W()));
+  $("wr").classList.toggle("hide",!W());$("study").classList.toggle("write",W());$("acc").classList.remove("hide");$("ansFlip").classList.toggle("hide",W());
+  $("hint").textContent=W()?"Enter corrige e depois passa para a próxima. Erradas voltam no fim da rodada.":"As que você errar voltam no fim da rodada.";
+  graded=null;$("fb").classList.add("hide");$("wAct").classList.add("hide");$("wForm").classList.remove("hide");$("wIn").value="";
+  if(W()&&cur&&matchMedia("(hover:hover)").matches)setTimeout(()=>$("wIn").focus(),50);
+}
+function check(){
+  if(!cur||graded)return;const v=$("wIn").value.trim();if(!v){$("wIn").focus();return}
+  const g=grade(cur,v);graded=g;$("card").classList.add("flip");
+  const fb=$("fb");fb.classList.remove("hide","ok");$("wForm").classList.add("hide");$("acc").classList.add("hide");$("wAct").classList.remove("hide");
+  if(g.r==="ok"){fb.classList.add("ok");fb.innerHTML=`<b>Parfait !</b><div class="ln">${esc(v)}</div>`;$("wOver").classList.add("hide");$("wAct").classList.add("single")}
+  else{const d=diffHtml(v,g.best);
+    fb.innerHTML=`<b>${g.r==="acc"?"Quase: confira os acentos":"Ainda não"}</b><div class="lab">você escreveu</div><div class="ln">${d.ub}</div><div class="lab">resposta</div><div class="ln">${d.bb}</div>`;
+    $("wOver").classList.remove("hide");$("wAct").classList.remove("single")}
+  $("wNext").focus();
+}
+function wNext(over){if(!graded)return;const ok=over||graded.r==="ok";answer(ok)}
+function switchMode(m){if(mode===m)return;mode=m;try{localStorage.setItem(MK,m)}catch(e){}if(cur||!$("done").classList.contains("hide"))start(lastCards,title,chap,lastMix);else setMode()}
 function answer(ok){
   if(!cur)return;
   st[cur.id]=ok?1:0;save();
@@ -826,6 +919,13 @@ function openChap(ci){start(all.filter(c=>c.ci===ci),`${ci+1}. ${CH[ci].t}`,ci,f
 $("card").addEventListener("click",flip);
 $("bSpeak").onclick=speak;if(!canSpeak)$("bSpeak").classList.add("hide");
 $("vSel").onchange=()=>{chosen=$("vSel").value;try{localStorage.setItem(VK,chosen)}catch(e){}speak()};
+$("acc").innerHTML=ACC.map(a=>`<button type="button" tabindex="-1">${a}</button>`).join("");
+$("acc").addEventListener("mousedown",e=>e.preventDefault());
+$("acc").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const i=$("wIn"),p=i.selectionStart??i.value.length,q2=i.selectionEnd??p;
+  i.value=i.value.slice(0,p)+b.textContent+i.value.slice(q2);i.focus();i.setSelectionRange(p+1,p+1)});
+$("wForm").addEventListener("submit",e=>{e.preventDefault();check()});
+$("wNext").onclick=()=>wNext(false);$("wOver").onclick=()=>wNext(true);
+$("mFlip").onclick=()=>switchMode("flip");$("mWrite").onclick=()=>switchMode("write");
 $("bYes").onclick=()=>answer(true);$("bNo").onclick=()=>answer(false);
 $("bShuf").onclick=()=>{if(q.length>1){shuffle(q);next()}};
 $("bBack").onclick=goHome;$("bHome").onclick=goHome;
@@ -836,6 +936,7 @@ let armed=false;
 $("bReset").onclick=()=>{if(!armed){armed=true;$("bReset").textContent="Toque de novo para confirmar";setTimeout(()=>{armed=false;$("bReset").textContent="Zerar progresso"},3000);return}
   st={};save();armed=false;$("bReset").textContent="Zerar progresso";renderHome()};
 document.addEventListener("keydown",e=>{if($("study").classList.contains("hide")||!cur)return;
+  if(W()){if(e.target.tagName==="INPUT")return;if(graded&&e.key==="Enter"&&e.target.tagName!=="BUTTON"){e.preventDefault();wNext(false)}return}
   if(e.key===" "||e.key==="Enter"){e.preventDefault();flip()}else if(e.key==="ArrowRight")answer(true);else if(e.key==="ArrowLeft")answer(false)});
 let sx=null;
 $("card").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
