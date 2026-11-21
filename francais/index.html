@@ -1092,8 +1092,10 @@ const today=()=>key(new Date());
 const diff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
 const DOW=["dom","seg","ter","qua","qui","sex","sáb"];
 const fmt=k=>{const d=parse(k);return `${DOW[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth()+1)}`};
-const START="2026-11-22",OFF_FROM="2026-11-23",OFF_TO="2026-11-28";
-const isOff=k=>k>=OFF_FROM&&k<=OFF_TO;
+const START="2026-11-22";
+const OFFS=[["2026-11-23","2026-11-28","semana de folga"],["2026-12-09","2026-12-10","folga"],["2026-12-25","2026-12-25","Natal"],["2026-12-30","2027-01-02","folga de Ano-Novo"]];
+const isOff=k=>OFFS.some(([a,b])=>k>=a&&k<=b);
+const backOn=k=>{while(isOff(k))k=addD(k,1);return k};
 const PLAN=[];{let d=START;CH.forEach((_,ci)=>{while(isOff(d))d=addD(d,1);PLAN.push({d,ci});d=addD(d,1)})}
 
 const END="2027-02-19";
@@ -1153,7 +1155,7 @@ function renderHome(){
   }else{
     const off=isOff(t),before=t<START;
     const head=before?"seu plano começa amanhã":off?"dia de folga":nextUp?"capítulo do dia feito":"todos os capítulos vistos";
-    const sub=before?`Começa ${fmt(START)} com o capítulo 1. Se quiser, já pode adiantar.`:off?`Volta ${fmt(addD(OFF_TO,1))}. As revisões continuam disponíveis se você quiser.`:nextUp?`Próximo: capítulo ${nextUp.ci+1} em ${fmt(nextUp.d)}.`:"Agora é manter as revisões em dia.";
+    const sub=before?`Começa ${fmt(START)} com o capítulo 1. Se quiser, já pode adiantar.`:off?`Volta ${fmt(backOn(t))}. As revisões continuam disponíveis se você quiser.`:nextUp?`Próximo: capítulo ${nextUp.ci+1} em ${fmt(nextUp.d)}.`:"Agora é manter as revisões em dia.";
     html=`<span class="date mono">${fmt(t)}</span><h2>${head}</h2><p class="ct">${sub}</p><p class="cnt">${dueTxt} para hoje</p>
     <div class="acts">${due.length?`<button class="btn pri" id="bDue">fazer as revisões</button>`:""}${nextUp?`<button class="btn" id="bAhead">adiantar capítulo ${nextUp.ci+1}</button>`:""}</div>`;
   }
@@ -1176,12 +1178,13 @@ function renderHome(){
 }
 function renderPlan(){
   const t=today();
-  $("pSum").textContent=`${fmt(START)} → ${fmt(END)} · folga ${fmt(OFF_FROM)}–${fmt(OFF_TO)}`;
-  const ph=[["fase 1 · a1","22/11 → 06/01","capítulos 1–40 + Coffee Break French temporada 1"],["fase 2 · a2","07/01 → 18/01","capítulos 41–52 + Journal en français facile"],["fase 3 · rumo ao b1","19/01 → 19/02","só revisões do Anki, temporada 2 do Coffee Break e o jornal"]];
+  $("pSum").textContent=`${fmt(START)} → ${fmt(END)} · ${TL.length} dias de estudo, ${OFFS.length} folgas`;
+  const dayOf=n=>TL.find(x=>x.n===n).d,lastCh=PLAN[PLAN.length-1].d,f2=k=>k.slice(8)+"/"+k.slice(5,7);
+  const ph=[["fase 1 · a1",`${f2(START)} → ${f2(dayOf(40))}`,"capítulos 1–40 + Coffee Break French temporada 1"],["fase 2 · a2",`${f2(dayOf(41))} → ${f2(lastCh)}`,"capítulos 41–52 + Journal en français facile"],["fase 3 · rumo ao b1",`${f2(addD(lastCh,1))} → ${f2(END)}`,"só revisões do Anki, temporada 2 do Coffee Break e o jornal"]];
   $("phases").innerHTML=ph.map(p=>`<div class="ph"><b>${p[0]}</b><span class="mono">${p[1]}</span><small>${p[2]}</small></div>`).join("");
-  let h="",offShown=false;
+  let h="";const offShown={};
   TL.forEach(x=>{
-    if(!offShown&&x.d>OFF_TO){offShown=true;h+=`<li class="off"><div class="d mono">${fmt(OFF_FROM)}<br>${fmt(OFF_TO)}</div><div class="c"><b>semana de folga</b><small>Sem capítulo novo. Se der vontade, as revisões continuam no início.</small></div></li>`}
+    OFFS.forEach((o,k)=>{if(!offShown[k]&&x.d>o[1]){offShown[k]=1;h+=`<li class="off"><div class="d mono">${fmt(o[0])}${o[1]!==o[0]?"<br>"+fmt(o[1]):""}</div><div class="c"><b>${o[2]}</b><small>Sem capítulo novo. Se der vontade, as revisões continuam no início.</small></div></li>`}});
     const ch=x.ci!=null?CH[x.ci]:null,done=ch&&chDone(x.ci);
     const st=x.d===t?"now":done?"ok":x.d<t&&ch?"late":x.d<t?"past":"";
     h+=`<li class="${st}" ${x.d===t?'id="tlNow"':""}><div class="d mono">${fmt(x.d)}<span>dia ${x.n}</span></div><div class="c">
