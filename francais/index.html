@@ -176,6 +176,7 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
 .gart{border-radius:14px;padding:0 10px;border:2.5px solid var(--line)}.gart.ok{background:var(--coral);color:var(--onc)}.gart.no{background:var(--pink)}
 .gbtns{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:620px;margin:28px auto 0}
 .btn.big{min-height:72px;font:800 28px 'Bricolage Grotesque',sans-serif}
+.gmean{display:block;margin:16px auto 0}
 .gfb{max-width:620px;margin:24px auto 0;border:2.5px solid var(--line);border-radius:18px;padding:14px 16px;background:var(--white);box-shadow:5px 5px 0 var(--sh);display:grid;gap:4px}
 .gfb.ok{background:var(--pink)}.gfb b{font:800 22px 'Bricolage Grotesque',sans-serif}
 .plinks{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
@@ -320,10 +321,11 @@ body,.face,.ch,.btn,.tool{transition:background-color .2s,color .2s}
     <div class="prog"><i id="gProg"></i></div>
     <div id="gPlay">
       <div class="gcard" id="gCard"><span class="gblank" id="gArt">___</span> <span id="gWord"></span><small id="gPt"></small></div>
+      <button class="btn sm gmean" id="gMean" type="button">voir le sens</button>
       <div class="gfb hide" id="gFb"></div>
       <div class="gbtns" id="gBtns"><button class="btn big" data-a="m">un</button><button class="btn big" data-a="f">une</button></div>
       <button class="btn pri reveal hide" id="gNext" type="button">próxima →</button>
-      <p class="hint">Atalhos: ← un, → une. As palavras que você erra aparecem mais vezes.</p>
+      <p class="hint">Atalhos: ← un, → une, M mostra o significado. As palavras que você erra aparecem mais vezes.</p>
     </div>
     <div class="done hide" id="gDone">
       <h2 id="gT"></h2><p id="gP"></p>
@@ -1268,7 +1270,7 @@ const TL=[];{let d=START,n=0;const chOf={};PLAN.forEach(p=>chOf[p.d]=p.ci);
     else if(ci!=null)pod={t:"Journal en français facile",s:"o jornal do dia, 10 min, com transcrição no site da RFI",u:RFI,q:"Journal en français facile"};
     else if(d>PH3_END)pod=n%2?{t:"Journal en français facile",s:"o jornal do dia (A2–B1)",u:RFI,q:"Journal en français facile"}:{t:"LanguaTalk Slow French",s:"um episódio, 99% em francês (A2–B1)",u:LTK,q:"LanguaTalk Slow French"};
     else pod={t:`Coffee Break French 2:${pad(n-52)}`,s:`temporada 2, lição ${n-52} (A2) + Journal en français facile`,u:CBF,q:`Coffee Break French CBF 2:${pad(n-52)}`};
-    const pods=[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF,q:"Coffee Break French CBF 1:01"});
+    const pods=n===1?[]:[pod];if(n===2)pods.unshift({t:"Coffee Break French 1:01",s:"a lição do dia 1, que ficou pendente",u:CBF,q:"Coffee Break French CBF 1:01"});
     const dow=parse(d).getDay(),task=ci!=null?null:d<=PH3_END?"rev":dow===6?"sim":dow===3?"simp":"rev4";
     TL.push({d,n,ci:ci??null,pods,task});d=addD(d,1)}}
 
@@ -1424,17 +1426,34 @@ function check(){
   if(!cur||graded)return;const v=$("wIn").value.trim();if(!v){$("wIn").focus();return}
   const g=grade(cur,v);graded=g;
   const fb=$("fb");fb.classList.remove("hide","ok");$("wForm").classList.add("hide");$("acc").classList.add("hide");
-  if(g.r==="ok"){fb.classList.add("ok");fb.innerHTML=`<b>Parfait !</b><div class="ln">${esc(v)}</div>`}
-  else{const d=diffHtml(v,g.best);fb.innerHTML=`<b>${g.r==="acc"?"Quase: confira os acentos":"Ainda não"}</b><div class="lab">você escreveu</div><div class="ln">${d.ub}</div><div class="lab">resposta</div><div class="ln">${d.bb}</div>`}
-  reveal(g.r==="ok"?2:g.r==="acc"?1:0);
+  const ref=g.best||norm(v),alts=[...new Set(synOf(ref).flat().filter(w=>!synRe(w).test(ref)))];
+  const altH=alts.length?`<div class="lab">também vale</div><div class="ln">${alts.map(esc).join(" · ")}</div>`:"";
+  if(g.r==="ok"){fb.classList.add("ok");fb.innerHTML=`<b>Parfait !</b><div class="ln">${esc(v)}</div>${altH}`}
+  else{const d=diffHtml(v,g.best);fb.innerHTML=`<b>${g.r==="acc"?"Quase: confira acentos e apóstrofos":g.r==="ne"?"Quase: faltou o ne da negação":"Ainda não"}</b><div class="lab">você escreveu</div><div class="ln">${d.ub}</div><div class="lab">resposta</div><div class="ln">${d.bb}</div>${altH}`}
+  reveal(g.r==="ok"?2:g.r==="acc"||g.r==="ne"?1:0);
   const s=$("rate").querySelector(".pri");if(s)s.focus();
 }
 
 /* ---------- correção (modo escrever) ---------- */
 const strip=x=>x.normalize("NFD").replace(/[̀-ͯ]/g,"");
-function norm(x){return x.toLowerCase().replace(/[’`´]/g,"'").replace(/[«»]/g," ").replace(/\s*([?!.,;:])\s*/g,"$1 ").replace(/[.!?;:,]+\s*$/,"").replace(/\s+/g," ").trim()}
+/* compara sem ligar para maiúsculas, pontuação, barras, hífens e espaços extras */
+function norm(x){return x.normalize("NFC").toLowerCase().replace(/[’‘`´ʼ]/g,"'").replace(/[«»"“”()\[\]/\\,.;:!?¿¡…–—-]/g," ").replace(/\s*'\s*/g,"'").replace(/\s+/g," ").trim()}
+/* sinônimos: qualquer forma do grupo vale pela outra (e aparece no feedback) */
+const SYN=[["portable","téléphone portable","mobile","téléphone"],["voiture","bagnole"],["la voiture","l'auto"],["ordinateur","ordi"],
+  ["professeur","prof"],["professeure","prof"],["cinéma","ciné"],["restaurant","resto"],["sympathique","sympa"],
+  ["bonjour","salut"],["merci beaucoup","merci bien"],["de rien","je vous en prie","je t'en prie","avec plaisir"],["pardon","excusez moi","excuse moi","désolé","désolée"],
+  ["travail","boulot"],["appartement","appart"],["d'accord","ok"],["oui","ouais"],["parce que","car"],["maintenant","en ce moment","actuellement"],
+  ["tout de suite","immédiatement"],["vite","rapidement"],["après","ensuite","puis"],["enfin","finalement"],["beau","joli"],["belle","jolie"],["laid","moche"],
+  ["drôle","marrant","rigolo"],["les gens","les personnes"],["un peu","un petit peu"],["c'est combien","combien ça coûte","ça coûte combien"],
+  ["qu'est ce que c'est","c'est quoi"],["où est","où se trouve"],["à bientôt","à plus tard","à plus"],["week end","weekend"],
+  ["email","e mail"],["mail","courriel"],["clé","clef"],["le vélo","la bicyclette"],["le bus","l'autobus"],["frigo","réfrigérateur"],
+  ["télé","télévision"],["photo","photographie"],["médecin","docteur"],["très bien","super"],["chez moi","à la maison"]]
+  .map(g=>g.map(norm));
+const synRe=w=>new RegExp("(^|[\\s'])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|\\s)","g");
+const synOf=x=>SYN.filter(g=>g.some(w=>synRe(w).test(x)));
 function cands(c){
   const exp=c.k==="t"?c.f:c.b,set=new Set();const add=x=>{x=norm(x);if(x)set.add(x)};
+  (c.n.match(/informal: ([^;]+)/)||[]).slice(1).forEach(add);
   add(exp);add(exp.replace(/\(.*?\)/g,""));
   if(exp.includes(" — "))exp.split(" — ").slice(1).forEach(p=>{add(p);p.split(" / ").forEach(add)});
   exp.split(" / ").forEach(p=>{add(p);add(p.replace(/\(.*?\)/g,""));(p.match(/\(([^)]*)\)/g)||[]).forEach(m=>add(m.slice(1,-1).replace(/^ou /,"")))});
@@ -1445,8 +1464,15 @@ function cands(c){
     const [pre,suf]=f.split("___").map(norm);
     [...set].forEach(e=>{if(e.startsWith(pre)&&e.endsWith(suf)&&e.length>pre.length+suf.length)add(e.slice(pre.length,e.length-suf.length))});
   }
+  /* "est-ce que" é opcional numa pergunta */
+  [...set].forEach(e=>{if(/^est ce qu/.test(e))add(e.replace(/^est ce que? ?/,"").replace(/^qu'/,""))});
+  /* troca sinônimos (até 2 por resposta) */
+  for(let pass=0;pass<2;pass++)[...set].forEach(e=>synOf(e).forEach(g=>g.forEach(w=>{const r=synRe(w);if(r.test(e))g.forEach(o=>{if(o!==w)add(e.replace(synRe(w),(m,p)=>p+o))})})));
   return [...set];
 }
+/* sem o "ne" da negação: certo na fala, mas no TCF escrito conta */
+const dropNe=x=>x.replace(/(^|\s)ne\s/g,"$1").replace(/(^|\s)n'/g,"$1").replace(/(^|\s)(j|m|t|s|l|d|qu)e\s(?=[aeiouyhâàéèêîôû])/g,"$1$2'");
+const noApo=x=>strip(x).replace(/'/g," ");
 function lcs(a,b,eq){const m=a.length,n=b.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));
   for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)d[i][j]=eq(a[i],b[j])?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
   const pa={};let i=0,j=0;while(i<m&&j<n){if(eq(a[i],b[j])){pa[i]=j;i++;j++}else if(d[i+1][j]>=d[i][j+1])i++;else j++}
@@ -1455,7 +1481,8 @@ const seq=(p,q2)=>strip(p)===strip(q2);
 function grade(c,input){
   const u=norm(input),cs=cands(c);
   if(cs.includes(u))return {r:"ok"};
-  const a=cs.find(x=>strip(x)===strip(u));if(a)return {r:"acc",best:a};
+  const a=cs.find(x=>noApo(x)===noApo(u));if(a)return {r:"acc",best:a};
+  const ne=cs.find(x=>x!==dropNe(x)&&strip(dropNe(x))===strip(u));if(ne)return {r:"ne",best:ne};
   const ut=u.split(" ");let best=cs[0],bl=-1e9;
   cs.forEach(x=>{const xt=x.split(" "),l=lcs(ut,xt,seq).len-Math.abs(xt.length-ut.length)*.1;if(l>bl){bl=l;best=x}});
   return {r:"no",best};
@@ -1494,14 +1521,14 @@ function genStart(){
 function genNext(){
   if(gi>=gq.length){$("gPlay").classList.add("hide");$("gDone").classList.remove("hide");$("gProg").style.width="100%";
     $("gT").textContent=gok>=18?"excellent !":gok>=14?"très bien !":"continue !";$("gP").textContent=`${gok} de ${gq.length} certas. As que você errou vão aparecer mais nas próximas rodadas.`;return}
-  const n=gq[gi];gans=false;$("gArt").textContent="___";$("gArt").className="gblank";$("gWord").textContent=n[0];$("gPt").textContent="";
+  const n=gq[gi];gans=false;$("gArt").textContent="___";$("gArt").className="gblank";$("gWord").textContent=n[0];$("gPt").textContent="";$("gMean").classList.remove("hide");
   $("gFb").classList.add("hide");$("gBtns").classList.remove("hide");$("gNext").classList.add("hide");
   $("gCount").textContent=`${gi+1} de ${gq.length}`;$("gProg").style.width=(gi/gq.length*100)+"%";
 }
 function genAns(a){
   if(gans)return;gans=true;const n=gq[gi],ok=a===n[1];
   if(ok){gok++;if(gm[n[0]])gm[n[0]]=Math.max(0,gm[n[0]]-1)}else gm[n[0]]=(gm[n[0]]||0)+1;ls.set(GK,gm);
-  const art=n[1]==="m"?"un":"une";$("gArt").textContent=art;$("gArt").className="gart"+(ok?" ok":" no");$("gPt").textContent=n[2];
+  const art=n[1]==="m"?"un":"une";$("gArt").textContent=art;$("gArt").className="gart"+(ok?" ok":" no");$("gPt").textContent=n[2];$("gMean").classList.add("hide");
   $("gFb").innerHTML=`<b>${ok?"isso!":"é "+art+" "+esc(n[0])}</b>${n[3]?`<span>${esc(n[3])}</span>`:""}`;$("gFb").className="gfb"+(ok?" ok":"");
   $("gBtns").classList.add("hide");$("gNext").classList.remove("hide");$("gNext").focus();say(art+" "+n[0]);
 }
@@ -1618,11 +1645,13 @@ $("tl").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b
   mode=g;ls.set(MK,mode);const ci=+b.dataset.c;startSession(all.filter(c=>c.ci===ci),`${ci+1}. ${CH[ci].t}`)});$("gAgain").onclick=genStart;
 $("gBtns").addEventListener("click",e=>{const b=e.target.closest("button");if(b)genAns(b.dataset.a)});
 $("gNext").onclick=()=>{gi++;genNext()};
+const genMean=()=>{if(gans||!gq[gi])return;$("gPt").textContent=gq[gi][2];$("gMean").classList.add("hide")};
+$("gMean").onclick=genMean;
 $("bSpeak").onclick=()=>cur&&say(frText(cur));if(!canSpeak)$("bSpeak").classList.add("hide");
 $("vSel").onchange=()=>{chosen=$("vSel").value;ls.set(VK,chosen);cur&&say(frText(cur))};
 document.addEventListener("keydown",e=>{
   if(!$("conj").classList.contains("hide")){if(cdone&&e.key==="Enter"&&e.target.tagName!=="BUTTON"&&e.target.tagName!=="INPUT"){e.preventDefault();cix++;conjNext()}return}
-  if(!$("gen").classList.contains("hide")){if(!gans){if(e.key==="ArrowLeft")genAns("m");else if(e.key==="ArrowRight")genAns("f")}else if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){gi++;genNext()}return}
+  if(!$("gen").classList.contains("hide")){if(!gans){if(e.key==="ArrowLeft")genAns("m");else if(e.key==="ArrowRight")genAns("f");else if(e.key==="m"||e.key==="ArrowDown"){e.preventDefault();genMean()}}else if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){gi++;genNext()}return}
   if($("study").classList.contains("hide")||!cur||e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;
   if(!flipped){if(!wcard()&&(e.key===" "||e.key==="Enter")){e.preventDefault();reveal(null)}return}
   if(/^[1-4]$/.test(e.key)){rate(+e.key-1);return}
